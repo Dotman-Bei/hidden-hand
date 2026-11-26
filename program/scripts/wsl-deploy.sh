@@ -38,7 +38,9 @@ case "${MODE}" in
     echo "HH-DEPLOY: PASS ${PROGRAM_ID}"
     ;;
   check)
-    solana program show "${PROGRAM_ID}" --url "${RPC}" >/dev/null 2>&1 || fail "${PROGRAM_ID} is not deployed on devnet"
+    # `solana account` needs no default signer (WSL has none); stderr stays visible.
+    INFO="$(solana account "${PROGRAM_ID}" --url "${RPC}")" || fail "${PROGRAM_ID} is not deployed on devnet"
+    grep -q "Executable: true" <<< "${INFO}" || fail "${PROGRAM_ID} is not an executable program on devnet"
     echo "HH-DEPLOY: PASS ${PROGRAM_ID}"
     ;;
   *) fail "mode must be deploy or check";;
