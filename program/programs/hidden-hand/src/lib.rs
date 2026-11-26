@@ -34,6 +34,13 @@ declare_id!("HZdoTuj1N8u1EBsVB6Bd6cgXDVnswb1cX1nFkX4miRFb");
 /// Scoped VRF identity of this program; the oracle signs our callbacks with it.
 pub const PROGRAM_IDENTITY: Pubkey = program_identity_pubkey(&crate::ID);
 
+/// Scoped VRF identity PDA that signs our callbacks: PDA([b"identity", crate::ID], VRF program).
+/// Evaluated once at compile time. `#[vrf_callback]` would otherwise inject this derivation into
+/// an account attribute, where it runs (pure-Rust sha256 + off-curve search) on every callback.
+pub const VRF_CALLBACK_IDENTITY: Pubkey = Pubkey::new_from_array(
+    ephemeral_rollups_sdk::vrf::consts::scoped_vrf_identity_const(&crate::ID).0,
+);
+
 #[ephemeral]
 #[program]
 pub mod hidden_hand {
@@ -285,14 +292,20 @@ pub mod hidden_hand {
         require!(ctx.accounts.table.mode == DealMode::Tee, HhError::ModeNotSupported);
         require!(ctx.accounts.table.phase == Phase::Trading, HhError::WrongPhase);
         require!(now >= ctx.accounts.table.end_ts, HhError::BellNotRung);
+        require_keys_eq!(ctx.accounts.hand0.key(), ctx.accounts.table.seats[0].hand, HhError::WrongHand);
+        require_keys_eq!(ctx.accounts.hand1.key(), ctx.accounts.table.seats[1].hand, HhError::WrongHand);
+        require_keys_eq!(ctx.accounts.hand2.key(), ctx.accounts.table.seats[2].hand, HhError::WrongHand);
+        require_keys_eq!(ctx.accounts.hand3.key(), ctx.accounts.table.seats[3].hand, HhError::WrongHand);
         let table_key = ctx.accounts.table.key();
-        let bumps = [ctx.bumps.hand0, ctx.bumps.hand1, ctx.bumps.hand2, ctx.bumps.hand3];
         let owners = [
             ctx.accounts.hand0.owner,
             ctx.accounts.hand1.owner,
             ctx.accounts.hand2.owner,
             ctx.accounts.hand3.owner,
         ];
+        let bumps = owners.map(|owner| {
+            Pubkey::find_program_address(&[HAND_SEED, table_key.as_ref(), owner.as_ref()], &crate::ID).1
+        });
         let hand_cards = [
             ctx.accounts.hand0.cards,
             ctx.accounts.hand1.cards,
@@ -509,30 +522,38 @@ pub struct RequestDeal<'info> {
 #[vrf_callback]
 #[derive(Accounts)]
 pub struct CallbackDeal<'info> {
+    // Declared here (same name and first position as the field `#[vrf_callback]` injects, which
+    // it then skips) so the identity address is the compile-time VRF_CALLBACK_IDENTITY.
+    /// Scoped VRF identity PDA, bound to this program. Its presence as a signer proves
+    /// the callback was issued by the VRF program for this program.
+    #[account(address = VRF_CALLBACK_IDENTITY)]
+    pub vrf_program_identity: Signer<'info>,
     #[account(mut)]
     pub table: Box<Account<'info, Table>>,
     #[account(mut)]
-    pub hand0: Account<'info, Hand>,
+    pub hand0: Box<Account<'info, Hand>>,
     #[account(mut)]
-    pub hand1: Account<'info, Hand>,
+    pub hand1: Box<Account<'info, Hand>>,
     #[account(mut)]
-    pub hand2: Account<'info, Hand>,
+    pub hand2: Box<Account<'info, Hand>>,
     #[account(mut)]
-    pub hand3: Account<'info, Hand>,
+    pub hand3: Box<Account<'info, Hand>>,
 }
 
 #[derive(Accounts)]
 pub struct RevealHands<'info> {
     #[account(mut, seeds = [TABLE_SEED, &table.round_id.to_le_bytes()], bump)]
     pub table: Box<Account<'info, Table>>,
-    #[account(mut, seeds = [HAND_SEED, table.key().as_ref(), table.seats[0].owner.as_ref()], bump)]
-    pub hand0: Account<'info, Hand>,
-    #[account(mut, seeds = [HAND_SEED, table.key().as_ref(), table.seats[1].owner.as_ref()], bump)]
-    pub hand1: Account<'info, Hand>,
-    #[account(mut, seeds = [HAND_SEED, table.key().as_ref(), table.seats[2].owner.as_ref()], bump)]
-    pub hand2: Account<'info, Hand>,
-    #[account(mut, seeds = [HAND_SEED, table.key().as_ref(), table.seats[3].owner.as_ref()], bump)]
-    pub hand3: Account<'info, Hand>,
+    // Hands are checked in the handler against table.seats[i].hand (set under the HAND seeds at
+    // join_table): seeds constraints here pushed try_accounts past the 4096-byte SBF stack limit.
+    #[account(mut)]
+    pub hand0: Box<Account<'info, Hand>>,
+    #[account(mut)]
+    pub hand1: Box<Account<'info, Hand>>,
+    #[account(mut)]
+    pub hand2: Box<Account<'info, Hand>>,
+    #[account(mut)]
+    pub hand3: Box<Account<'info, Hand>>,
     /// CHECK: hand 0's permission PDA, checked by the permission program
     #[account(mut)]
     pub permission0: UncheckedAccount<'info>,

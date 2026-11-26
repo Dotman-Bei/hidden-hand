@@ -29,7 +29,8 @@
             "Scoped VRF identity PDA, bound to this program. Its presence as a signer proves",
             "the callback was issued by the VRF program for this program."
           ],
-          "signer": true
+          "signer": true,
+          "address": "6t74YQGsCu8sv8SX28jBkwwzHoiAym8pu1zDtiPCyKJ9"
         },
         {
           "name": "table",
@@ -818,107 +819,19 @@
         },
         {
           "name": "hand0",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  104,
-                  97,
-                  110,
-                  100
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "table"
-              },
-              {
-                "kind": "account",
-                "path": "table.seats [0].owner",
-                "account": "Table"
-              }
-            ]
-          }
+          "writable": true
         },
         {
           "name": "hand1",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  104,
-                  97,
-                  110,
-                  100
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "table"
-              },
-              {
-                "kind": "account",
-                "path": "table.seats [1].owner",
-                "account": "Table"
-              }
-            ]
-          }
+          "writable": true
         },
         {
           "name": "hand2",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  104,
-                  97,
-                  110,
-                  100
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "table"
-              },
-              {
-                "kind": "account",
-                "path": "table.seats [2].owner",
-                "account": "Table"
-              }
-            ]
-          }
+          "writable": true
         },
         {
           "name": "hand3",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  104,
-                  97,
-                  110,
-                  100
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "table"
-              },
-              {
-                "kind": "account",
-                "path": "table.seats [3].owner",
-                "account": "Table"
-              }
-            ]
-          }
+          "writable": true
         },
         {
           "name": "permission0",

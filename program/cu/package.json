@@ -1,0 +1,11 @@
+{
+  "name": "hidden-hand-cu",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Hidden Hand compute-unit gate: runs program instructions in LiteSVM, fails at >= 100000 CU",
+  "dependencies": {
+    "@solana/web3.js": "^1.98.0",
+    "litesvm": "0.8.0"
+  }
+}
