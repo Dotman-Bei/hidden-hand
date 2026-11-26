@@ -74,3 +74,7 @@ User pastes the Step 0 kickoff (idea-forge) in a fresh tab: `opus` · effort `ma
 - GitHub: public, or private with @jonasXchen invited. Form needs Telegram sign-in + wallet connect (prizes pay there) + X handle + team Telegram handles.
 - White space: dice, gachapon, RPS, binary prediction, sealed auction already ship as MagicBlock templates — a reskin of one is weak against the judging text.
 - The 0a session's INDEX timestamps ("14:20–15:05 UTC") disagree with the machine clock (commits 14:15Z); immaterial, the deadline facts come from the API. Real clock at this review: 14:20 UTC (15:20 WAT) — ~45 min AHEAD of the schedule above.
+
+## Pack addendum verified 2026-11-26 14:40 UTC (guide)
+- Commit b45394e (noreply identity): prior-art.md now lists all 40 past Blitz winners (V0–V9) with categories, MagicBlock features and repo/demo links; event.md resolves the `CLAIM_QUALIFY_RATING` question (Champions program, not Blitz judging). No emails/phones/Telegram handles found in the file (grep). Facts used by the guide: 7 of 8 V8+V9 winners are Games; Private ER/TEE in 3 of V9's 4 winners and V8's 1st; VRF in V9's 1st and 2nd; 34/40 winners link a demo video (all 8 from V8/V9); V10 entries are hidden until revealed. Still open: judging weights, Wizardio criteria, who votes, "recent activity" window.
+- Idea-forge not started at this check (no docs/idea-forge/). Kickoff re-issued with the updated PRIOR ART line.
