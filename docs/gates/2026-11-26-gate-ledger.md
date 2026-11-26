@@ -51,7 +51,12 @@ Commands are verbatim from `docs/superpowers/plans/2026-11-26-gates.md` (PowerSh
   - After the gate: write the kit's `references/faucets/solana-devnet.md` from the template (public facts only) and commit it locally in the kit, without pushing.
 - **Human moment:** only if the fallback is needed (faucet.solana.com: paste the public key, 5 SOL, Confirm ×2).
 - **Risk:** faucet outage or GitHub verification refusal → fall back. Devnet only.
-- **Status:** pending.
+- **Status:** **funded 2026-11-26T20:11Z, verified on-chain; the plan's gate command is waiting on client:2** (`client/scripts/burner-balance.ts` did not exist yet at 20:13Z, so `pnpm --filter @hidden-hand/client balance -- --min 5` cannot run).
+  - **Route:** devnetfaucet.org, GitHub OAuth on the logged-in Chrome session (account Dotman-Bei; app "Devnet Faucet" by ferric; scopes `read:user`, `user:email`, read-only; **consent granted**). "Make airdrop anonymous" ticked (GitHub name kept off the public list). No CAPTCHA. Primary route worked first try; no fallback used.
+  - **Evidence:** page said "Airdrop successful"; faucet balance 28,532.28 → 28,512.28. Read-only on-chain check (WSL): `solana balance BT9TYK3HL5Bc7rZfTNrPiGkjGXDKeDpdEPgWBqAks1Bs --url devnet` → **20 SOL**. `solana transaction-history` → 1 tx, `3XUB3EEgdA4z8Y8umv81nQF3B1xwt2WQ9GHR8w5LM8v91ACF7LxEcYxuG89rEj1nKSBGDMb8MCf5zAmvKGirZbuB`.
+  - **Kit write-back:** `references/faucets/solana-devnet.md` committed locally in the kit (`21942e5`), not pushed.
+  - **Agave drift seen:** at 20:12Z WSL reported `solana-cli 3.1.10` (it was 3.1.9 at 20:09Z; the parallel build session flipped it). Re-pinned with `agave-install init 3.1.9`; S2/S3/S7/S4 re-probed: 3.1.9 / 3.1.9 / 3.1.9 / anchor-cli 1.0.2.
+  - **Orchestrator:** run the gate once client:2 lands. Expected `BURNER-BALANCE: PASS` (20 SOL ≥ 5).
 
 ### gates:13 — Spike deploy (first devnet deploy)
 - **Tier:** A (burner is payer and upgrade authority). **Pass:** early (Step 2, before the spike window closes 22:57:25Z).
@@ -135,3 +140,6 @@ Every OAuth, CAPTCHA, faucet request and on-chain action is logged here.
 |---|---|---|---|
 | 2026-11-26T20:00Z | imp-faucet | Read-only probe: faucet.solana.com, the Solana devnet SOL guide, devnetfaucet.org (pages read; no address entered, no claim, no sign-in); WSL `solana --url devnet cluster-version`. QuickNode blocked by the extension's site permissions. | Table above |
 | 2026-11-26T20:09Z | gates:11 | Burner created with WSL `solana-keygen` (plan command, inner quotes escaped for PS 5.1) → `.env`; gate run | pubkey `BT9TYK3HL5Bc7rZfTNrPiGkjGXDKeDpdEPgWBqAks1Bs`; `BURNER-PRESENT: PASS` |
+| 2026-11-26T20:10Z | gates:12 | **OAuth consent** on github.com: "Devnet Faucet" by ferric, account Dotman-Bei, scopes `read:user` `user:email` (read-only). No CAPTCHA. | consent screen read before approving |
+| 2026-11-26T20:11Z | gates:12 | **Faucet request**: devnetfaucet.org, 20 SOL, anonymous listing | "Airdrop successful"; tx `3XUB3EEg…irZbuB`; balance 20 SOL |
+| 2026-11-26T20:12Z | gates:12 | WSL Agave drift 3.1.10 → re-pinned `agave-install init 3.1.9` | S2/S3/S7/S4 PASS after re-pin |
