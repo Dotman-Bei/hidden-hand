@@ -149,4 +149,4 @@ Every OAuth, CAPTCHA, faucet request and on-chain action is logged here.
 | 2026-11-26T20:11Z | gates:12 | **Faucet request**: devnetfaucet.org, 20 SOL, anonymous listing | "Airdrop successful"; tx `3XUB3EEg…irZbuB`; balance 20 SOL |
 | 2026-11-26T20:12Z | gates:12 | WSL Agave drift 3.1.10 → re-pinned `agave-install init 3.1.9` | S2/S3/S7/S4 PASS after re-pin |
 | 2026-11-26T20:15Z | gates:13 | **On-chain deploy** of `hidden_hand` (burner = payer + upgrade authority) via `wsl-deploy.sh deploy` | sig `52uTwHf4…Tc6ZuRQ` Finalized; program `HZdoTuj1…miRFb`; burner 20 → 17.88 SOL |
-| 2026-11-26T20:20Z | gates:13 | Plan gate `wsl-deploy.sh check` → FAIL (gate-script bug: `No default signer found`, stderr hidden); program verified deployed by signer-free reads | routed to the orchestrator/architect |
+| 2026-11-26T20:16Z | gates:13 | Plan gate `wsl-deploy.sh check` → FAIL (gate-script bug: `No default signer found`, stderr hidden); program verified deployed by signer-free reads | routed to the orchestrator/architect |
