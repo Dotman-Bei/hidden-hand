@@ -14,3 +14,5 @@ web/public/assets/
 web/.taste-skill/
 web/shots/
 .taste-skill/
+# orchestrator worktrees (never committed)
+.claude/worktrees/
