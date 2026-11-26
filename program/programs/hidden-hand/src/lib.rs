@@ -392,6 +392,78 @@ pub mod hidden_hand {
     }
 
     // [hh:instructions:market]
+    /// ER. After the reveal: P&L per seat, the winner, then commit + undelegate the table and the four hands.
+    pub fn settle_round(ctx: Context<SettleRound>) -> Result<()> {
+        {
+            let table = &mut ctx.accounts.table;
+            require!(table.phase == Phase::Revealed, HhError::WrongPhase);
+            let mut pnls = [0i64; SEATS];
+            for i in 0..SEATS {
+                pnls[i] = pnl_c(table.seats[i].cash_c, table.seats[i].pos, table.hidden_sum);
+            }
+            table.pnl_c = pnls;
+            table.winner = winner(&pnls);
+            table.phase = Phase::Settled;
+            msg!(
+                "hh:settled round={} hidden_sum={} close_c={} winner={}",
+                table.round_id,
+                table.hidden_sum,
+                table.price_c,
+                table.winner
+            );
+        }
+        ctx.accounts.table.exit(&crate::ID)?;
+        MagicIntentBundleBuilder::new(
+            ctx.accounts.payer.to_account_info(),
+            ctx.accounts.magic_context.to_account_info(),
+            ctx.accounts.magic_program.to_account_info(),
+        )
+        .commit_and_undelegate(&[
+            ctx.accounts.table.to_account_info(),
+            ctx.accounts.hand0.to_account_info(),
+            ctx.accounts.hand1.to_account_info(),
+            ctx.accounts.hand2.to_account_info(),
+            ctx.accounts.hand3.to_account_info(),
+        ])
+        .build_and_invoke()?;
+        Ok(())
+    }
+
+    /// Base layer, after the undelegation lands. The whole vault goes to the recorded winner, once.
+    pub fn claim_pot(ctx: Context<ClaimPot>) -> Result<()> {
+        let table_key = ctx.accounts.table.key();
+        let vault_bump = ctx.bumps.vault;
+        {
+            let table = &mut ctx.accounts.table;
+            require!(table.phase == Phase::Settled, HhError::WrongPhase);
+            require!(!table.paid, HhError::AlreadyPaid);
+            require!((table.winner as usize) < SEATS, HhError::NoWinner);
+            require_keys_eq!(
+                ctx.accounts.winner.key(),
+                table.seats[table.winner as usize].owner,
+                HhError::WrongWinner
+            );
+            table.paid = true;
+        }
+        let amount = ctx.accounts.vault.lamports();
+        if amount > 0 {
+            let signer: &[&[&[u8]]] = &[&[VAULT_SEED, table_key.as_ref(), &[vault_bump]]];
+            transfer(
+                CpiContext::new_with_signer(
+                    ctx.accounts.system_program.key(),
+                    Transfer {
+                        from: ctx.accounts.vault.to_account_info(),
+                        to: ctx.accounts.winner.to_account_info(),
+                    },
+                    signer,
+                ),
+                amount,
+            )?;
+        }
+        msg!("hh:paid round={} lamports={} to={}", ctx.accounts.table.round_id, amount, ctx.accounts.winner.key());
+        Ok(())
+    }
+
     // [hh:instructions:settle]
     // [hh:instructions:commit-reveal]
 }
@@ -588,5 +660,36 @@ pub struct Trade<'info> {
 }
 
 // [hh:accounts:market]
+#[commit]
+#[derive(Accounts)]
+pub struct SettleRound<'info> {
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    #[account(mut, seeds = [TABLE_SEED, &table.round_id.to_le_bytes()], bump)]
+    pub table: Box<Account<'info, Table>>,
+    #[account(mut, seeds = [HAND_SEED, table.key().as_ref(), table.seats[0].owner.as_ref()], bump)]
+    pub hand0: Box<Account<'info, Hand>>,
+    #[account(mut, seeds = [HAND_SEED, table.key().as_ref(), table.seats[1].owner.as_ref()], bump)]
+    pub hand1: Box<Account<'info, Hand>>,
+    #[account(mut, seeds = [HAND_SEED, table.key().as_ref(), table.seats[2].owner.as_ref()], bump)]
+    pub hand2: Box<Account<'info, Hand>>,
+    #[account(mut, seeds = [HAND_SEED, table.key().as_ref(), table.seats[3].owner.as_ref()], bump)]
+    pub hand3: Box<Account<'info, Hand>>,
+}
+
+#[derive(Accounts)]
+pub struct ClaimPot<'info> {
+    #[account(mut, seeds = [TABLE_SEED, &table.round_id.to_le_bytes()], bump)]
+    pub table: Box<Account<'info, Table>>,
+    #[account(mut, seeds = [VAULT_SEED, table.key().as_ref()], bump)]
+    pub vault: SystemAccount<'info>,
+    /// CHECK: compared with table.seats[table.winner].owner in the handler
+    #[account(mut)]
+    pub winner: UncheckedAccount<'info>,
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    pub system_program: Program<'info, System>,
+}
+
 // [hh:accounts:settle]
 // [hh:accounts:commit-reveal]
