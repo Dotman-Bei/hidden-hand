@@ -1,12 +1,19 @@
-import { MAGIC_PROGRAM_ID, PERMISSION_PROGRAM_ID, permissionPdaFromAccount, waitUntilPermissionActive } from "@magicblock-labs/ephemeral-rollups-sdk";
+import type { IdlAccounts } from "@coral-xyz/anchor";
+import { MAGIC_PROGRAM_ID, PERMISSION_PROGRAM_ID, permissionPdaFromAccount } from "@magicblock-labs/ephemeral-rollups-sdk";
 import type { Connection, Keypair, PublicKey } from "@solana/web3.js";
 import { EPHEMERAL_VAULT_ID, TEE_RPC, TEE_VALIDATOR } from "../config";
 import { teeConnection } from "../conn";
+import type { HiddenHand } from "../idl/hidden_hand";
 import { handPda } from "../pda";
 import { makeProgram } from "../program";
 import { fetchTable, waitUntilOnEr } from "../round-base";
 import { sendIxs } from "../tx";
+import { isReadable, pollReadable, waitUntilReadable } from "./readable";
 import type { DealAdapter, DealContext } from "./types";
+
+type HandAccount = IdlAccounts<HiddenHand>["hand"];
+export const READABLE_TIMEOUT_MS = 20_000;
+export const READABLE_EVERY_MS = 400;
 
 export class TeeDealAdapter implements DealAdapter {
   readonly mode = "tee" as const;
@@ -55,18 +62,37 @@ export class TeeDealAdapter implements DealAdapter {
       );
     }
     const sig = await sendIxs(er, ixs, ctx.payer);
-    // returns false on timeout (never throws); a public permission (the table) has no members and never reports active
-    for (const account of hands) {
-      const ok = await waitUntilPermissionActive(TEE_RPC, account, 30_000);
-      if (!ok) throw new Error(`permission not active: ${account.toBase58()}`);
+    // Permission active = the owner reads its hand through its own authenticated TEE JSON-RPC connection.
+    // (The SDK's permission-active waiter calls GET /permission, which the devnet TEE answers 404.)
+    // Without seatKeys there is nothing to read as; readOwnHand polls the same way instead.
+    if (ctx.seatKeys) {
+      for (let i = 0; i < hands.length; i++) {
+        const key = ctx.seatKeys.find((k) => k.publicKey.equals(ctx.seatOwners[i]));
+        if (!key) continue;
+        const ok = await waitUntilReadable(key, hands[i], READABLE_TIMEOUT_MS, READABLE_EVERY_MS);
+        if (!ok) throw new Error(`permission not active: ${hands[i].toBase58()}`);
+      }
     }
     return [sig];
   }
 
   async readOwnHand(ctx: DealContext, owner: Keypair): Promise<[number, number] | null> {
     const program = makeProgram(await this.erConnection(owner), owner);
-    const hand = await program.account.hand.fetchNullable(handPda(ctx.table, owner.publicKey));
-    if (!hand || !hand.dealt) return null;
+    const address = handPda(ctx.table, owner.publicKey);
+    const got: { hand?: HandAccount } = {};
+    // a blurred / undecodable account counts as a miss (the decode throws and the poll keeps going)
+    const info = await pollReadable(
+      async () => {
+        const i = await program.provider.connection.getAccountInfo(address, "confirmed");
+        if (!isReadable(i)) return null;
+        got.hand = program.coder.accounts.decode<HandAccount>("Hand", i.data);
+        return i;
+      },
+      READABLE_TIMEOUT_MS,
+      READABLE_EVERY_MS,
+    );
+    const hand = got.hand;
+    if (!info || !hand || !hand.dealt) return null;
     return [hand.cards[0], hand.cards[1]];
   }
 

@@ -14,4 +14,5 @@ export function createDealAdapter(mode: DealMode, store: SecretStore): DealAdapt
 }
 
 export { TeeDealAdapter };
+export { isReadable, pollReadable, waitUntilReadable } from "./readable";
 export type { DealAdapter, DealContext, SecretStore } from "./types";

@@ -12,6 +12,8 @@ export interface DealContext {
   table: PublicKey;
   seatOwners: PublicKey[];
   payer: Keypair;
+  /** Owner keypairs in seat order, when the caller holds them: afterDelegate then waits until each owner can read its hand. */
+  seatKeys?: Keypair[];
 }
 
 export interface DealAdapter {
