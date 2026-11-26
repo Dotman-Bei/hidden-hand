@@ -14,7 +14,7 @@ Guide seat: claude-sonnet-5-5 · standard · high. Started 2026-11-26 14:05 UTC 
 
 ## Project repo
 - `Dotman-Bei/solana-blitz-v10-2026` (private). Created by the guide 2026-11-26 per `references/repo-bootstrap.md`. Local clone: `C:\Users\bamig\Documents\VIBE CODE\Hackathons\solana-blitz-v10-2026` (sibling of the kit `build-system`).
-- Rename to `<project-slug>` at idea-forge Step 4 (record it here). Flip public only at Step 3, consent-gated.
+- **RENAMED by idea-forge Step 4 (2026-11-26): `Dotman-Bei/hidden-hand` (private, default branch main).** Local folder keeps the old name `solana-blitz-v10-2026` (open workspace); origin points at hidden-hand. Every kickoff REPO field = `Dotman-Bei/hidden-hand`. (Old: `Dotman-Bei/solana-blitz-v10-2026`, redirected.) Flip public only at Step 3, consent-gated.
 - Commit identity pinned LOCALLY to `140025488+Dotman-Bei@users.noreply.github.com`. The GLOBAL git email on this machine is the personal Gmail — any fresh clone (e.g. a no-space build clone) must set the noreply identity before the first commit.
 
 ## Tollgate
@@ -53,7 +53,7 @@ Skills: Solidity/DeFi, TypeScript/React, Python/ML (no Rust listed — all Solan
 | Step | Status | Artifact | Verified | Seat settings it ran at |
 |---|---|---|---|---|
 | 0a | **done** | docs/resources/2026-11-26-solana-blitz-v10/ (commit 0d6210e) + tollgate 7a40d3f | 2026-11-26 guide: pushed, noreply identity, judging+eligibility quotes re-fetched live from /api/panels and match; INDEX gaps read; sponsors/magicblock.md has pins, devnet endpoints, ER/VRF/private-payments/cranks/session-keys code | claude-opus-5-5 (booted on sonnet, stopped, user ran /model opus); effort high per kickoff |
-| 0 | pending | docs/idea-forge/*-brief.md | — | — |
+| 0 | **done** | docs/idea-forge/2026-11-26-hidden-hand-brief.md (commit 6afd654) | 2026-11-26 15:10Z guide: pulled, all sections present incl. Feasibility notes (pins, devnet endpoints, ER/VRF/TEE/cranks/session keys), no personal data/secrets (grep), rename verified | claude-opus-5-5 · effort max |
 | 1 | pending | spec + plans + manifest | — | — |
 | 3 pre | pending | docs/gates/*-gate-ledger.md | — | — |
 | 2 | pending | task commits | — | — |
@@ -61,7 +61,7 @@ Skills: Solidity/DeFi, TypeScript/React, Python/ML (no Rust listed — all Solan
 | 3 close | pending | ledger + submission | — | — |
 
 ## Next action
-User pastes the Step 0 kickoff (idea-forge) in a fresh tab: `opus` · effort `max`. In parallel the guide hands the toolchain-install block (WSL + Agave 3.1.9 + avm/Anchor 1.0.2) for a separate throwaway tab.
+User pastes the Step 1 kickoff (architect) in a fresh tab: opus · effort xhigh (Extra). Toolchain preflight tab still running; its report is pending verification.
 
 ## Open blockers
 1. **Solana toolchain** (tollgate C1–C4): install WSL Ubuntu, then Rust 1.89.0, Agave 3.1.9, avm + Anchor 1.0.2 inside it. Start in parallel with Step 0; must be PASS before Step 2. A WSL install may need a reboot — do it between sessions.
@@ -78,3 +78,9 @@ User pastes the Step 0 kickoff (idea-forge) in a fresh tab: `opus` · effort `ma
 ## Pack addendum verified 2026-11-26 14:40 UTC (guide)
 - Commit b45394e (noreply identity): prior-art.md now lists all 40 past Blitz winners (V0–V9) with categories, MagicBlock features and repo/demo links; event.md resolves the `CLAIM_QUALIFY_RATING` question (Champions program, not Blitz judging). No emails/phones/Telegram handles found in the file (grep). Facts used by the guide: 7 of 8 V8+V9 winners are Games; Private ER/TEE in 3 of V9's 4 winners and V8's 1st; VRF in V9's 1st and 2nd; 34/40 winners link a demo video (all 8 from V8/V9); V10 entries are hidden until revealed. Still open: judging weights, Wizardio criteria, who votes, "recent activity" window.
 - Idea-forge not started at this check (no docs/idea-forge/). Kickoff re-issued with the updated PRIOR ART line.
+
+## Step 0 verified + calendar-fit call (guide, 2026-11-26 15:10 UTC / 16:10 WAT)
+- **Project: Hidden Hand** — a 90-second on-chain trading pit: VRF deals sealed hands readable only by their owner (Private ER), everyone trades a contract worth the hidden sum on a zero-fee ER, at the bell hands flip and the best trader takes the pot. Rubric 460 vs 424 runner-up; win depends on buildability 4 and on the devnet TEE path (brief carries a commit-reveal-over-VRF fallback that gives up only the Private ER primitive).
+- **Calendar fit: FITS, conditionally.** 22h50m to the deadline at review time. Conditions handed to the architect as hard constraints: (1) plan ≤ ~12 tasks, one small Anchor program, bots/frontend as TS/Python clients; (2) the Day-1 spike (TEE auth-token read, VRF callback inside the TEE ER, reveal at settlement) is task 1 with a hard decision rule: if it is not passing 2h into Step 2 (by ~19:30Z), switch to the commit-reveal fallback and do not revisit; (3) stretch goals (private cash-out, crank bell) are out of the manifest unless everything else is green; (4) toolchain (WSL/Agave/Anchor) must PASS before Step 2 — separate preflight tab running.
+- Risk register: Private ER TS auth flow, session-keys program ID and Magic Router TS API are pack gaps; devnet SOL for deploy is the one external dependency (Step 3 preflight); no Rust skill on the user's side.
+- Schedule (UTC): architect done by ~16:45Z, Step 3 preflight 16:45Z, Step 2 17:00Z→06:00Z, green-or-cut 07:00Z, demo/README 07:00–10:00Z, submit by 12:00Z, deadline 14:00Z.
