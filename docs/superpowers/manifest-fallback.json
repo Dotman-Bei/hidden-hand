@@ -1,0 +1,918 @@
+{
+  "project": "hidden-hand",
+  "spec": "docs/superpowers/specs/2026-11-26-hidden-hand-design.md",
+  "subsystems": [
+    "program",
+    "client",
+    "bots",
+    "web",
+    "docs",
+    "gates"
+  ],
+  "spike_rule": "If docs/spike/spike-result.md does not show (a) PASS, (b) PASS and (c) PASS by 2 h after Step 2 starts, copy docs/superpowers/manifest-fallback.json over docs/superpowers/manifest.json, commit, and do not revisit.",
+  "burner": "HH_BURNER_KEYPAIR_JSON from the cross-session store (the git-ignored repo-root .env; optionally the user env var). Never from the repo.",
+  "variant": "commit-reveal (fallback: manifest.json + program:20 + client:21)",
+  "tasks": [
+    {
+      "id": "program:1",
+      "subsystem": "program",
+      "title": "Day-1 spike — workspace, engine cards, TEE deal path, build/deploy scripts",
+      "plan": "docs/superpowers/plans/2026-11-26-program.md",
+      "depends_on": [],
+      "effort": "xhigh",
+      "model_tier": "top",
+      "files": {
+        "create": [
+          ".gitattributes",
+          ".gitignore",
+          ".env.example",
+          "program/Anchor.toml",
+          "program/Cargo.toml",
+          "program/Cargo.lock",
+          "program/engine/Cargo.toml",
+          "program/engine/src/lib.rs",
+          "program/programs/hidden-hand/Cargo.toml",
+          "program/programs/hidden-hand/Xargo.toml",
+          "program/programs/hidden-hand/src/lib.rs",
+          "program/programs/hidden-hand/src/state.rs",
+          "program/programs/hidden-hand/src/errors.rs",
+          "program/scripts/wsl-build.sh",
+          "program/scripts/wsl-deploy.sh",
+          "client/src/idl/hidden_hand.json",
+          "client/src/idl/hidden_hand.ts"
+        ],
+        "modify": [],
+        "test": []
+      },
+      "provides": [
+        "program/scripts/wsl-build.sh [build|sync-id] -> last line \"HH-GATE: PASS\"",
+        "program/scripts/wsl-deploy.sh [deploy|check] -> last line \"HH-DEPLOY: PASS <program id>\"",
+        "hidden_hand_engine::cards_from_randomness(&[u8; 32]) -> [u8; 8]",
+        "hidden_hand_engine::hidden_sum(&[u8; 8]) -> u16",
+        "state.rs: Table, Hand, Seat, TradeEntry, DealMode{Tee,CommitReveal}, Phase{Open,Dealing,Trading,Revealed,Settled}, TABLE_SEED/HAND_SEED/VAULT_SEED",
+        "ix open_table(round_id: u64, mode: DealMode, duration_secs: u16, entry_lamports: u64)",
+        "ix join_table(commitment: [u8; 32])",
+        "ix delegate_pda(target: DelegateTarget{Table{round_id},Hand{table,owner}})",
+        "ix create_table_permission()",
+        "ix create_hand_permission(owner: Pubkey)",
+        "ix request_deal(client_seed: u8)",
+        "ix callback_deal(randomness: [u8; 32])",
+        "ix reveal_hands()",
+        "lib.rs markers // [hh:instructions:market] // [hh:instructions:settle] // [hh:instructions:commit-reveal] // [hh:accounts:market] // [hh:accounts:settle] // [hh:accounts:commit-reveal]",
+        "client/src/idl/hidden_hand.json + client/src/idl/hidden_hand.ts (written by every wsl-build.sh run)"
+      ],
+      "requires": [],
+      "gate": {
+        "run": "wsl -d Ubuntu-24.04 -u root --exec bash -l program/scripts/wsl-build.sh build",
+        "expect": "PASS — last line `HH-GATE: PASS`"
+      },
+      "commit": "feat(program): spike - TEE deal path, engine cards, WSL build and deploy scripts",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "client:2",
+      "subsystem": "client",
+      "title": "Client core, TEE DealAdapter, spike script",
+      "plan": "docs/superpowers/plans/2026-11-26-clients.md",
+      "depends_on": [
+        "program:1"
+      ],
+      "effort": "high",
+      "files": {
+        "create": [
+          "package.json",
+          "pnpm-workspace.yaml",
+          "pnpm-lock.yaml",
+          "tsconfig.base.json",
+          "client/package.json",
+          "client/tsconfig.json",
+          "client/src/config.ts",
+          "client/src/pda.ts",
+          "client/src/keys.ts",
+          "client/src/node.ts",
+          "client/src/conn.ts",
+          "client/src/program.ts",
+          "client/src/tx.ts",
+          "client/src/round-base.ts",
+          "client/src/deal/types.ts",
+          "client/src/deal/tee.ts",
+          "client/src/deal/index.ts",
+          "client/src/spike-report.ts",
+          "client/src/index.ts",
+          "client/scripts/spike.ts",
+          "client/scripts/burner-balance.ts"
+        ],
+        "modify": [],
+        "test": [
+          "client/test/keys.test.ts",
+          "client/test/pda.test.ts",
+          "client/test/round-base.test.ts",
+          "client/test/spike-report.test.ts"
+        ]
+      },
+      "provides": [
+        "@hidden-hand/client: createDealAdapter(mode: DealMode, store: SecretStore): DealAdapter",
+        "@hidden-hand/client: interface DealAdapter { mode; erRpc; validator; commitmentFor(table, owner): Uint8Array; erConnection(identity: Keypair): Promise<Connection>; afterDelegate(ctx: DealContext): Promise<string[]>; readOwnHand(ctx: DealContext, owner: Keypair): Promise<[number, number] | null>; reveal(ctx: DealContext, seatKeys: Keypair[]): Promise<string[]> }",
+        "@hidden-hand/client: interface DealContext { roundId: BN; table: PublicKey; seatOwners: PublicKey[]; payer: Keypair }",
+        "@hidden-hand/client: interface SecretStore { get(key: string): Uint8Array | null; set(key: string, value: Uint8Array): void } + memorySecretStore()",
+        "@hidden-hand/client: config (PROGRAM_ID, BASE_RPC, TEE_RPC, TEE_VALIDATOR, AS_RPC, AS_VALIDATOR, DEFAULT_EPHEMERAL_QUEUE, EPHEMERAL_VAULT_ID, DEFAULT_DEAL_MODE, type DealMode, explorerTx, explorerAddress)",
+        "@hidden-hand/client: tablePda(roundId: BN), handPda(table, owner), vaultPda(table)",
+        "@hidden-hand/client: deriveBotKeypair(burner: Keypair, index: number): Keypair, keypairFromJson(json: string): Keypair, parseDotEnv(text: string, name: string): string | null",
+        "@hidden-hand/client/node: loadBurner(): Keypair, REPO_ROOT: string",
+        "@hidden-hand/client: baseConnection(), teeConnection(identity), publicErConnection(rpc), makeProgram(connection, keypair): Program<HiddenHand>, sendIxs(connection, ixs, payer, extraSigners?): Promise<string>",
+        "@hidden-hand/client: round-base (openTable, joinTable, delegatePdas, requestDeal, fetchTable, decodeTable, waitForPhase, waitUntilOnEr, waitForOwner, fundAccounts, type TableView, type PhaseName, type SeatView, type TradeView)",
+        "pnpm --filter @hidden-hand/client spike -> writes docs/spike/spike-result.md with lines \"(a) PASS|FAIL\", \"(b) PASS|FAIL\", \"(c) PASS|FAIL\", \"(f) PASS|FAIL\"",
+        "pnpm --filter @hidden-hand/client balance -- --min <sol> -> last line \"BURNER-BALANCE: PASS\""
+      ],
+      "requires": [
+        "client/src/idl/hidden_hand.json + client/src/idl/hidden_hand.ts (written by every wsl-build.sh run)",
+        "ix open_table(round_id: u64, mode: DealMode, duration_secs: u16, entry_lamports: u64)",
+        "ix join_table(commitment: [u8; 32])",
+        "ix delegate_pda(target: DelegateTarget{Table{round_id},Hand{table,owner}})",
+        "ix create_table_permission()",
+        "ix create_hand_permission(owner: Pubkey)",
+        "ix request_deal(client_seed: u8)",
+        "ix callback_deal(randomness: [u8; 32])",
+        "ix reveal_hands()"
+      ],
+      "gate": {
+        "run": "pnpm --filter @hidden-hand/client verify",
+        "expect": "PASS — `tsc` prints nothing and vitest reports `4 passed` test files."
+      },
+      "commit": "feat(client): connections, TEE deal adapter, round base API, spike script",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "program:3",
+      "subsystem": "program",
+      "title": "Market — engine quotes, golden vectors, `trade` instruction",
+      "plan": "docs/superpowers/plans/2026-11-26-program.md",
+      "depends_on": [
+        "program:1"
+      ],
+      "effort": "high",
+      "files": {
+        "create": [
+          "program/engine-vectors.json"
+        ],
+        "modify": [
+          "program/engine/src/lib.rs",
+          "program/programs/hidden-hand/src/lib.rs",
+          "program/Cargo.lock",
+          "client/src/idl/hidden_hand.json",
+          "client/src/idl/hidden_hand.ts"
+        ],
+        "test": []
+      },
+      "provides": [
+        "hidden_hand_engine::quote(price_c: u32, pos: i32, side: Side, qty: u8) -> Result<Fill, TradeError>",
+        "hidden_hand_engine::pnl_c(cash_c: i64, pos: i32, hidden_sum: u16) -> i64",
+        "hidden_hand_engine::winner(pnls: &[i64; 4]) -> u8",
+        "program/engine-vectors.json (golden vectors: randomness -> cards; trades -> price, cash, pos, pnl, winner)",
+        "ix trade(side: u8, qty: u8)"
+      ],
+      "requires": [
+        "program/scripts/wsl-build.sh [build|sync-id] -> last line \"HH-GATE: PASS\"",
+        "state.rs: Table, Hand, Seat, TradeEntry, DealMode{Tee,CommitReveal}, Phase{Open,Dealing,Trading,Revealed,Settled}, TABLE_SEED/HAND_SEED/VAULT_SEED",
+        "lib.rs markers // [hh:instructions:market] // [hh:instructions:settle] // [hh:instructions:commit-reveal] // [hh:accounts:market] // [hh:accounts:settle] // [hh:accounts:commit-reveal]"
+      ],
+      "gate": {
+        "run": "wsl -d Ubuntu-24.04 -u root --exec bash -l program/scripts/wsl-build.sh build",
+        "expect": "PASS — last line `HH-GATE: PASS`"
+      },
+      "commit": "feat(program): linear-impact market, golden vectors, trade instruction",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "program:4",
+      "subsystem": "program",
+      "title": "Settlement — `settle_round` (P&L, winner, commit + undelegate) and `claim_pot`",
+      "plan": "docs/superpowers/plans/2026-11-26-program.md",
+      "depends_on": [
+        "program:3",
+        "program:1"
+      ],
+      "effort": "xhigh",
+      "model_tier": "top",
+      "files": {
+        "create": [],
+        "modify": [
+          "program/programs/hidden-hand/src/lib.rs",
+          "program/Cargo.lock",
+          "client/src/idl/hidden_hand.json",
+          "client/src/idl/hidden_hand.ts"
+        ],
+        "test": []
+      },
+      "provides": [
+        "ix settle_round() [ER; accounts payer, table, hand0..hand3; commits + undelegates table and 4 hands]",
+        "ix claim_pot() [base; accounts table, vault, winner, payer, system_program]"
+      ],
+      "requires": [
+        "hidden_hand_engine::pnl_c(cash_c: i64, pos: i32, hidden_sum: u16) -> i64",
+        "hidden_hand_engine::winner(pnls: &[i64; 4]) -> u8",
+        "ix trade(side: u8, qty: u8)",
+        "program/scripts/wsl-build.sh [build|sync-id] -> last line \"HH-GATE: PASS\"",
+        "lib.rs markers // [hh:instructions:market] // [hh:instructions:settle] // [hh:instructions:commit-reveal] // [hh:accounts:market] // [hh:accounts:settle] // [hh:accounts:commit-reveal]"
+      ],
+      "gate": {
+        "run": "wsl -d Ubuntu-24.04 -u root --exec bash -l program/scripts/wsl-build.sh build",
+        "expect": "PASS — last line `HH-GATE: PASS`; `client/src/idl/hidden_hand.json` now lists `settle_round` and `claim_pot`."
+      },
+      "commit": "feat(program): settle_round commit+undelegate and claim_pot payout",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "client:5",
+      "subsystem": "client",
+      "title": "TS engine port (golden vectors) and the round play API",
+      "plan": "docs/superpowers/plans/2026-11-26-clients.md",
+      "depends_on": [
+        "client:2",
+        "program:3",
+        "program:4"
+      ],
+      "effort": "medium",
+      "files": {
+        "create": [
+          "client/src/engine.ts",
+          "client/src/round-play.ts"
+        ],
+        "modify": [
+          "client/package.json",
+          "client/src/index.ts"
+        ],
+        "test": [
+          "client/test/engine.test.ts",
+          "client/test/round-play.test.ts"
+        ]
+      },
+      "provides": [
+        "@hidden-hand/client/engine: START_PRICE_C, STEP_C, MAX_LOT, POS_CAP, MIN_PRICE_C, MAX_PRICE_C, SEATS, CARDS_PER_SEAT, HAND_MEAN, type Side, type TradeError, interface SeatBook {cashC, pos}, interface Fill, quote(priceC, pos, side, qty): Fill | TradeError, cardsFromRandomness(bytes): number[], hiddenSum(cards): number, pnlC(seat, sum): number, winner(seats, sum): number, handEdge(cards: [number, number]): number",
+        "@hidden-hand/client: sendTrade(er, trader, table, side, qty): Promise<string>, settleRound(er, payer, view: TableView): Promise<string>, claimPot(base, payer, view: TableView): Promise<string>, findCommitSignatures(base, table, known: string[]): Promise<string[]>"
+      ],
+      "requires": [
+        "@hidden-hand/client: round-base (openTable, joinTable, delegatePdas, requestDeal, fetchTable, decodeTable, waitForPhase, waitUntilOnEr, waitForOwner, fundAccounts, type TableView, type PhaseName, type SeatView, type TradeView)",
+        "@hidden-hand/client: baseConnection(), teeConnection(identity), publicErConnection(rpc), makeProgram(connection, keypair): Program<HiddenHand>, sendIxs(connection, ixs, payer, extraSigners?): Promise<string>",
+        "program/engine-vectors.json (golden vectors: randomness -> cards; trades -> price, cash, pos, pnl, winner)",
+        "ix trade(side: u8, qty: u8)",
+        "ix settle_round() [ER; accounts payer, table, hand0..hand3; commits + undelegates table and 4 hands]",
+        "ix claim_pot() [base; accounts table, vault, winner, payer, system_program]"
+      ],
+      "gate": {
+        "run": "pnpm --filter @hidden-hand/client verify",
+        "expect": "PASS — `tsc` prints nothing; vitest reports `6 passed` test files, including every golden-vector case."
+      },
+      "commit": "feat(client): TS engine port on shared golden vectors, trade/settle/claim API",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "bots:6",
+      "subsystem": "bots",
+      "title": "Bot policy and the convergence Monte Carlo (gate)",
+      "plan": "docs/superpowers/plans/2026-11-26-clients.md",
+      "depends_on": [
+        "client:5"
+      ],
+      "effort": "medium",
+      "files": {
+        "create": [
+          "bots/package.json",
+          "bots/tsconfig.json",
+          "bots/src/policy.ts",
+          "bots/src/sim.ts",
+          "bots/scripts/sim-table.ts"
+        ],
+        "modify": [
+          "pnpm-lock.yaml"
+        ],
+        "test": [
+          "bots/test/policy.test.ts",
+          "bots/test/convergence.test.ts"
+        ]
+      },
+      "provides": [
+        "@hidden-hand/bots: mulberry32(seed): () => number, interface BotPersona {intervalMinMs, intervalMaxMs, rampMs, wobbleProb, maxLot}, interface BotMemory {wobble}, botTarget(ownSum, tMs, persona, mem): number, decide(ownSum, pos, tMs, persona, mem, rng): Order | null, personaFor(seat, rng): BotPersona, DEMO_SEED = 20261127",
+        "@hidden-hand/bots: simulateRound(seed, roundMs, fourth: FourthSeat): RoundOutcome, summarize(firstSeed, deals, roundMs, fourth): Summary"
+      ],
+      "requires": [
+        "@hidden-hand/client/engine: START_PRICE_C, STEP_C, MAX_LOT, POS_CAP, MIN_PRICE_C, MAX_PRICE_C, SEATS, CARDS_PER_SEAT, HAND_MEAN, type Side, type TradeError, interface SeatBook {cashC, pos}, interface Fill, quote(priceC, pos, side, qty): Fill | TradeError, cardsFromRandomness(bytes): number[], hiddenSum(cards): number, pnlC(seat, sum): number, winner(seats, sum): number, handEdge(cards: [number, number]): number"
+      ],
+      "gate": {
+        "run": "pnpm --filter @hidden-hand/bots verify",
+        "expect": "PASS — `tsc` prints nothing; vitest reports `2 passed` test files and logs `demo 75 s: within4=` and `live 90 s: within4=` at or above `60.0%`."
+      },
+      "commit": "feat(bots): linear-information bot policy with convergence Monte Carlo gate",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "bots:7",
+      "subsystem": "bots",
+      "title": "Demo-round runner and the devnet proof",
+      "plan": "docs/superpowers/plans/2026-11-26-clients.md",
+      "depends_on": [
+        "bots:6",
+        "client:5",
+        "client:2",
+        "gates:14",
+        "program:20",
+        "client:21"
+      ],
+      "effort": "high",
+      "files": {
+        "create": [
+          "bots/src/index.ts",
+          "bots/src/proof.ts",
+          "bots/src/runner.ts",
+          "bots/scripts/demo-round.ts",
+          "bots/scripts/check-proof.ts"
+        ],
+        "modify": [
+          "bots/package.json",
+          "pnpm-lock.yaml"
+        ],
+        "test": [
+          "bots/test/proof.test.ts"
+        ]
+      },
+      "provides": [
+        "pnpm --filter @hidden-hand/bots demo-round -- [--demo] [--proof] [--seat4 <pubkey>] [--duration <secs>] [--mode tee|commit-reveal] -> runs one devnet round, prints the /app/?round=<id> link, writes docs/proof/devnet-round.md with --proof",
+        "pnpm --filter @hidden-hand/bots check-proof -> last line \"PROOF: PASS\"",
+        "@hidden-hand/bots: formatProof(data: ProofData): string, checkProof(text: string): { ok: boolean; missing: string[] }"
+      ],
+      "requires": [
+        "@hidden-hand/bots: mulberry32(seed): () => number, interface BotPersona {intervalMinMs, intervalMaxMs, rampMs, wobbleProb, maxLot}, interface BotMemory {wobble}, botTarget(ownSum, tMs, persona, mem): number, decide(ownSum, pos, tMs, persona, mem, rng): Order | null, personaFor(seat, rng): BotPersona, DEMO_SEED = 20261127",
+        "@hidden-hand/client: createDealAdapter(mode: DealMode, store: SecretStore): DealAdapter",
+        "@hidden-hand/client: interface DealContext { roundId: BN; table: PublicKey; seatOwners: PublicKey[]; payer: Keypair }",
+        "@hidden-hand/client: round-base (openTable, joinTable, delegatePdas, requestDeal, fetchTable, decodeTable, waitForPhase, waitUntilOnEr, waitForOwner, fundAccounts, type TableView, type PhaseName, type SeatView, type TradeView)",
+        "@hidden-hand/client: sendTrade(er, trader, table, side, qty): Promise<string>, settleRound(er, payer, view: TableView): Promise<string>, claimPot(base, payer, view: TableView): Promise<string>, findCommitSignatures(base, table, known: string[]): Promise<string[]>",
+        "@hidden-hand/client/node: loadBurner(): Keypair, REPO_ROOT: string"
+      ],
+      "gate": {
+        "run": "pnpm --filter @hidden-hand/bots verify",
+        "expect": "PASS — `tsc` prints nothing; vitest reports `3 passed` test files."
+      },
+      "commit": "feat(bots): demo-round runner with base-layer devnet proof",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "web:8",
+      "subsystem": "web",
+      "title": "Landing page `/` with the illustrative pit hero",
+      "plan": "docs/superpowers/plans/2026-11-26-frontend.md",
+      "depends_on": [
+        "bots:6",
+        "client:5"
+      ],
+      "effort": "high",
+      "files": {
+        "create": [
+          "web/package.json",
+          "web/tsconfig.json",
+          "web/vite.config.ts",
+          "web/index.html",
+          "web/names.json",
+          "web/scripts/sync-kit.mjs",
+          "web/src/polyfills.ts",
+          "web/src/shared/tokens.css",
+          "web/src/shared/pitTimeline.ts",
+          "web/src/shared/PriceChart.tsx",
+          "web/src/landing/main.tsx",
+          "web/src/landing/PitIllustration.tsx",
+          "web/src/landing/landing.css",
+          "web/public/share.jpg",
+          "web/public/icons/.gitkeep"
+        ],
+        "modify": [
+          "pnpm-lock.yaml"
+        ],
+        "test": [
+          "web/test/pitTimeline.test.ts"
+        ]
+      },
+      "provides": [
+        "@hidden-hand/web: pitTimeline(seed: number, roundMs: number): PitTimeline { cards: number[]; hiddenSum: number; events: { tMs; seat; side; qty; priceAfterC }[]; closeC: number }",
+        "@hidden-hand/web: <PriceChart points={{ tMs: number; priceC: number }[]} durationMs={number} revealSum={number | null} />",
+        "web build: pnpm --filter @hidden-hand/web build -> web/dist/index.html (+ web/dist/app/index.html once Task 9 lands)",
+        "web/src/shared/tokens.css (the dealt :root block: plum-black-pink, Chivo + Chivo Mono, radius sharp)",
+        "taste gate armed in web/ (kind software, --rounds 6)"
+      ],
+      "requires": [
+        "@hidden-hand/bots: mulberry32(seed): () => number, interface BotPersona {intervalMinMs, intervalMaxMs, rampMs, wobbleProb, maxLot}, interface BotMemory {wobble}, botTarget(ownSum, tMs, persona, mem): number, decide(ownSum, pos, tMs, persona, mem, rng): Order | null, personaFor(seat, rng): BotPersona, DEMO_SEED = 20261127",
+        "@hidden-hand/client/engine: START_PRICE_C, STEP_C, MAX_LOT, POS_CAP, MIN_PRICE_C, MAX_PRICE_C, SEATS, CARDS_PER_SEAT, HAND_MEAN, type Side, type TradeError, interface SeatBook {cashC, pos}, interface Fill, quote(priceC, pos, side, qty): Fill | TradeError, cardsFromRandomness(bytes): number[], hiddenSum(cards): number, pnlC(seat, sum): number, winner(seats, sum): number, handEdge(cards: [number, number]): number"
+      ],
+      "gate": {
+        "run": "pnpm --filter @hidden-hand/web verify; if ($?) { pnpm --filter @hidden-hand/web build }; if ($?) { Push-Location web; node \"$HOME/.claude/skills/design-taste-frontend/scripts/gate.mjs\" dist/index.html; Pop-Location }",
+        "expect": "PASS — vitest passes `pitTimeline.test.ts`, the build writes `web/dist/index.html`, and the gate's last line is `GATE: PASS`."
+      },
+      "commit": "feat(web): landing page with the illustrative pit hero (taste gate PASS)",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "web:9",
+      "subsystem": "web",
+      "title": "The app shell `/app/` — live desk, chart, tape, states",
+      "plan": "docs/superpowers/plans/2026-11-26-frontend.md",
+      "depends_on": [
+        "web:8",
+        "client:5",
+        "client:2"
+      ],
+      "effort": "high",
+      "files": {
+        "create": [
+          "web/app/index.html",
+          "web/src/app/main.tsx",
+          "web/src/app/App.tsx",
+          "web/src/app/Desk.tsx",
+          "web/src/app/Tape.tsx",
+          "web/src/app/Record.tsx",
+          "web/src/app/burner.ts",
+          "web/src/app/states.ts",
+          "web/src/app/useRound.ts",
+          "web/src/app/app.css"
+        ],
+        "modify": [
+          "web/vite.config.ts",
+          "web/package.json",
+          "pnpm-lock.yaml"
+        ],
+        "test": [
+          "web/test/states.test.ts"
+        ]
+      },
+      "provides": [
+        "/app/?round=<id>[&mode=tee|commit-reveal] — the live desk (spectate any round; take the free seat; trade with the hand hint)",
+        "@hidden-hand/web: deriveUiState(input: UiInput): UiState"
+      ],
+      "requires": [
+        "@hidden-hand/web: pitTimeline(seed: number, roundMs: number): PitTimeline { cards: number[]; hiddenSum: number; events: { tMs; seat; side; qty; priceAfterC }[]; closeC: number }",
+        "@hidden-hand/web: <PriceChart points={{ tMs: number; priceC: number }[]} durationMs={number} revealSum={number | null} />",
+        "web/src/shared/tokens.css (the dealt :root block: plum-black-pink, Chivo + Chivo Mono, radius sharp)",
+        "taste gate armed in web/ (kind software, --rounds 6)",
+        "@hidden-hand/client: createDealAdapter(mode: DealMode, store: SecretStore): DealAdapter",
+        "@hidden-hand/client: round-base (openTable, joinTable, delegatePdas, requestDeal, fetchTable, decodeTable, waitForPhase, waitUntilOnEr, waitForOwner, fundAccounts, type TableView, type PhaseName, type SeatView, type TradeView)",
+        "@hidden-hand/client: sendTrade(er, trader, table, side, qty): Promise<string>, settleRound(er, payer, view: TableView): Promise<string>, claimPot(base, payer, view: TableView): Promise<string>, findCommitSignatures(base, table, known: string[]): Promise<string[]>",
+        "@hidden-hand/client/engine: START_PRICE_C, STEP_C, MAX_LOT, POS_CAP, MIN_PRICE_C, MAX_PRICE_C, SEATS, CARDS_PER_SEAT, HAND_MEAN, type Side, type TradeError, interface SeatBook {cashC, pos}, interface Fill, quote(priceC, pos, side, qty): Fill | TradeError, cardsFromRandomness(bytes): number[], hiddenSum(cards): number, pnlC(seat, sum): number, winner(seats, sum): number, handEdge(cards: [number, number]): number"
+      ],
+      "gate": {
+        "run": "pnpm --filter @hidden-hand/web verify; if ($?) { pnpm --filter @hidden-hand/web build }; if ($?) { Push-Location web; node \"$HOME/.claude/skills/design-taste-frontend/scripts/gate.mjs\" dist/app/index.html; Pop-Location }",
+        "expect": "PASS — vitest passes both test files, the build writes `web/dist/app/index.html`, and the gate's last line is `GATE: PASS`."
+      },
+      "commit": "feat(web): live /app desk with chart, tape, states and on-chain record (taste gate PASS)",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "docs:10",
+      "subsystem": "docs",
+      "title": "README (schema R1-web-app v1)",
+      "plan": "docs/superpowers/plans/2026-11-26-frontend.md",
+      "depends_on": [
+        "web:9",
+        "bots:7"
+      ],
+      "effort": "medium",
+      "files": {
+        "create": [
+          "LICENSE"
+        ],
+        "modify": [
+          "README.md"
+        ],
+        "test": []
+      },
+      "provides": [
+        "README.md (R1-web-app v1, TBD-post-build lines for the demo video, the live demo and the base-layer delegation tx)"
+      ],
+      "requires": [
+        "/app/?round=<id>[&mode=tee|commit-reveal] — the live desk (spectate any round; take the free seat; trade with the hand hint)",
+        "pnpm --filter @hidden-hand/bots demo-round -- [--demo] [--proof] [--seat4 <pubkey>] [--duration <secs>] [--mode tee|commit-reveal] -> runs one devnet round, prints the /app/?round=<id> link, writes docs/proof/devnet-round.md with --proof"
+      ],
+      "gate": {
+        "run": "$want = @('# Hidden Hand','## Demo','## What it does','## Quickstart','## Built at Solana Blitz v10 (Entertainment Finance)','## How it works','## Tech stack','## Run locally','## Contract addresses','## Roadmap','## License'); $stamp = '<!-- readme-schema: R1-web-app v1 -->'; $lines = Get-Content README.md -Encoding UTF8; $inFence = $false; $got = foreach ($l in $lines) { if ($l -match '^```') { $inFence = -not $inFence } elseif (-not $inFence -and $l -cmatch '^#{1,2} ') { $l } }; $ok = ($got.Count -eq $want.Count); if ($ok) { for ($i = 0; $i -lt $want.Count; $i++) { if ($got[$i] -cne $want[$i]) { $ok = $false } } }; $words = (Select-String -Path README.md -SimpleMatch 'linear information market' -Quiet) -and (Select-String -Path README.md -SimpleMatch 'random or idle human breaks the reveal' -Quiet) -and (Select-String -Path README.md -SimpleMatch 'TBD-post-build:demo-video-url' -Quiet); if ($ok -and $words -and ($lines[0] -ceq $stamp)) { 'PASS' } else { 'FAIL' }",
+        "expect": "PASS"
+      },
+      "commit": "docs: README (R1-web-app v1) and MIT license",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "gates:11",
+      "subsystem": "gates",
+      "title": "Burner wallet into the cross-session store",
+      "plan": "docs/superpowers/plans/2026-11-26-gates.md",
+      "depends_on": [],
+      "effort": "low",
+      "model_tier": "top",
+      "files": {
+        "create": [],
+        "modify": [],
+        "test": []
+      },
+      "provides": [
+        "HH_BURNER_KEYPAIR_JSON in the git-ignored repo-root .env (64-number JSON array; optional user env var)"
+      ],
+      "requires": [],
+      "gate": {
+        "run": "git check-ignore -q .env; if ($?) { node -e \"const fs=require('fs');const m=fs.existsSync('.env')&&fs.readFileSync('.env','utf8').match(/^HH_BURNER_KEYPAIR_JSON=(.+)$/m);let ok=false;try{const a=JSON.parse(m[1].trim());ok=Array.isArray(a)&&a.length===64}catch(e){}console.log(ok?'BURNER-PRESENT: PASS':'BURNER-PRESENT: FAIL')\" } else { 'BURNER-PRESENT: FAIL (.env is not git-ignored)' }",
+        "expect": "PASS — `BURNER-PRESENT: PASS`"
+      },
+      "commit": "chore(gates): burner wallet stored outside the repo",
+      "human_gate": true,
+      "allow_empty": true,
+      "status": "pending",
+      "gate_profile": "wallet"
+    },
+    {
+      "id": "gates:12",
+      "subsystem": "gates",
+      "title": "Devnet SOL for the burner",
+      "plan": "docs/superpowers/plans/2026-11-26-gates.md",
+      "depends_on": [
+        "gates:11",
+        "client:2"
+      ],
+      "effort": "low",
+      "model_tier": "top",
+      "files": {
+        "create": [],
+        "modify": [],
+        "test": []
+      },
+      "provides": [
+        "burner funded on devnet (>= 5 SOL, target 10)"
+      ],
+      "requires": [
+        "HH_BURNER_KEYPAIR_JSON in the git-ignored repo-root .env (64-number JSON array; optional user env var)",
+        "pnpm --filter @hidden-hand/client balance -- --min <sol> -> last line \"BURNER-BALANCE: PASS\""
+      ],
+      "gate": {
+        "run": "pnpm --filter @hidden-hand/client balance -- --min 5",
+        "expect": "PASS — last line `BURNER-BALANCE: PASS`"
+      },
+      "commit": "chore(gates): burner funded on devnet",
+      "human_gate": true,
+      "allow_empty": true,
+      "status": "pending",
+      "gate_profile": "faucet"
+    },
+    {
+      "id": "gates:13",
+      "subsystem": "gates",
+      "title": "Spike deploy (first devnet deploy of the program)",
+      "plan": "docs/superpowers/plans/2026-11-26-gates.md",
+      "depends_on": [
+        "program:1",
+        "gates:12"
+      ],
+      "effort": "low",
+      "model_tier": "top",
+      "files": {
+        "create": [
+          "docs/proof/deploy-log.md"
+        ],
+        "modify": [],
+        "test": []
+      },
+      "provides": [
+        "program deployed on devnet at the fixed program ID (docs/proof/deploy-log.md row)"
+      ],
+      "requires": [
+        "program/scripts/wsl-deploy.sh [deploy|check] -> last line \"HH-DEPLOY: PASS <program id>\"",
+        "burner funded on devnet (>= 5 SOL, target 10)"
+      ],
+      "gate": {
+        "run": "wsl -d Ubuntu-24.04 -u root --exec bash -l program/scripts/wsl-deploy.sh check",
+        "expect": "PASS — last line starts with `HH-DEPLOY: PASS`"
+      },
+      "commit": "chore(gates): spike deploy of hidden_hand to devnet",
+      "human_gate": true,
+      "allow_empty": false,
+      "status": "pending",
+      "gate_profile": "deploy"
+    },
+    {
+      "id": "gates:14",
+      "subsystem": "gates",
+      "title": "Spike run (decides the TEE path vs the fallback)",
+      "plan": "docs/superpowers/plans/2026-11-26-gates.md",
+      "depends_on": [
+        "gates:13",
+        "client:2"
+      ],
+      "effort": "low",
+      "model_tier": "top",
+      "files": {
+        "create": [
+          "docs/spike/spike-result.md"
+        ],
+        "modify": [],
+        "test": []
+      },
+      "provides": [
+        "docs/spike/spike-result.md with (a)(b)(c)(f) PASS/FAIL lines (the spike decision input)"
+      ],
+      "requires": [
+        "pnpm --filter @hidden-hand/client spike -> writes docs/spike/spike-result.md with lines \"(a) PASS|FAIL\", \"(b) PASS|FAIL\", \"(c) PASS|FAIL\", \"(f) PASS|FAIL\"",
+        "program deployed on devnet at the fixed program ID (docs/proof/deploy-log.md row)"
+      ],
+      "gate": {
+        "run": "$t = Get-Content docs/spike/spike-result.md -Raw -Encoding UTF8; if ($t -match '(?m)^\\(a\\) (PASS|FAIL)' -and $t -match '(?m)^\\(b\\) (PASS|FAIL)' -and $t -match '(?m)^\\(c\\) (PASS|FAIL)') { 'SPIKE-RECORDED' } else { 'SPIKE-MISSING' }",
+        "expect": "PASS — `SPIKE-RECORDED`"
+      },
+      "commit": "chore(gates): Day-1 spike result",
+      "human_gate": true,
+      "allow_empty": false,
+      "status": "pending",
+      "gate_profile": "wallet"
+    },
+    {
+      "id": "gates:15",
+      "subsystem": "gates",
+      "title": "Early integration — full-program deploy + one real devnet round",
+      "plan": "docs/superpowers/plans/2026-11-26-gates.md",
+      "depends_on": [
+        "program:4",
+        "bots:7",
+        "gates:14",
+        "program:1",
+        "program:20",
+        "client:21"
+      ],
+      "effort": "low",
+      "model_tier": "top",
+      "files": {
+        "create": [
+          "docs/proof/devnet-round.md"
+        ],
+        "modify": [
+          "docs/proof/deploy-log.md"
+        ],
+        "test": []
+      },
+      "provides": [
+        "full program upgraded on devnet and one real round settled (docs/proof/devnet-round.md, PROOF: PASS)"
+      ],
+      "requires": [
+        "program/scripts/wsl-deploy.sh [deploy|check] -> last line \"HH-DEPLOY: PASS <program id>\"",
+        "pnpm --filter @hidden-hand/bots demo-round -- [--demo] [--proof] [--seat4 <pubkey>] [--duration <secs>] [--mode tee|commit-reveal] -> runs one devnet round, prints the /app/?round=<id> link, writes docs/proof/devnet-round.md with --proof",
+        "pnpm --filter @hidden-hand/bots check-proof -> last line \"PROOF: PASS\""
+      ],
+      "gate": {
+        "run": "pnpm --filter @hidden-hand/bots check-proof",
+        "expect": "PASS — last line `PROOF: PASS`"
+      },
+      "commit": "chore(gates): early full deploy and first real devnet round",
+      "human_gate": true,
+      "allow_empty": false,
+      "status": "pending",
+      "gate_profile": "deploy"
+    },
+    {
+      "id": "gates:16",
+      "subsystem": "gates",
+      "title": "Final redeploy (Step 3)",
+      "plan": "docs/superpowers/plans/2026-11-26-gates.md",
+      "depends_on": [
+        "gates:15",
+        "web:9",
+        "docs:10",
+        "program:1",
+        "program:20",
+        "client:21"
+      ],
+      "effort": "low",
+      "model_tier": "top",
+      "files": {
+        "create": [],
+        "modify": [
+          "docs/proof/deploy-log.md"
+        ],
+        "test": []
+      },
+      "provides": [
+        "final program build live on devnet at the same program ID"
+      ],
+      "requires": [
+        "program/scripts/wsl-deploy.sh [deploy|check] -> last line \"HH-DEPLOY: PASS <program id>\""
+      ],
+      "gate": {
+        "run": "wsl -d Ubuntu-24.04 -u root --exec bash -l program/scripts/wsl-deploy.sh check",
+        "expect": "PASS — last line starts with `HH-DEPLOY: PASS`"
+      },
+      "commit": "chore(gates): final devnet redeploy",
+      "human_gate": true,
+      "allow_empty": false,
+      "status": "pending",
+      "gate_profile": "deploy"
+    },
+    {
+      "id": "gates:17",
+      "subsystem": "gates",
+      "title": "Closing devnet round and the submission proof",
+      "plan": "docs/superpowers/plans/2026-11-26-gates.md",
+      "depends_on": [
+        "gates:16",
+        "bots:7"
+      ],
+      "effort": "low",
+      "model_tier": "top",
+      "files": {
+        "create": [],
+        "modify": [
+          "docs/proof/devnet-round.md"
+        ],
+        "test": []
+      },
+      "provides": [
+        "docs/proof/devnet-round.md (final; base-layer delegation tx = the form's explorer link)"
+      ],
+      "requires": [
+        "pnpm --filter @hidden-hand/bots demo-round -- [--demo] [--proof] [--seat4 <pubkey>] [--duration <secs>] [--mode tee|commit-reveal] -> runs one devnet round, prints the /app/?round=<id> link, writes docs/proof/devnet-round.md with --proof",
+        "pnpm --filter @hidden-hand/bots check-proof -> last line \"PROOF: PASS\""
+      ],
+      "gate": {
+        "run": "pnpm --filter @hidden-hand/bots check-proof",
+        "expect": "PASS — last line `PROOF: PASS`"
+      },
+      "commit": "chore(gates): closing devnet round proof",
+      "human_gate": true,
+      "allow_empty": false,
+      "status": "pending",
+      "gate_profile": "wallet"
+    },
+    {
+      "id": "gates:18",
+      "subsystem": "gates",
+      "title": "Repo access for the judges",
+      "plan": "docs/superpowers/plans/2026-11-26-gates.md",
+      "depends_on": [
+        "docs:10"
+      ],
+      "effort": "low",
+      "model_tier": "top",
+      "files": {
+        "create": [],
+        "modify": [],
+        "test": []
+      },
+      "provides": [
+        "Dotman-Bei/hidden-hand public, or jonasXchen invited"
+      ],
+      "requires": [],
+      "gate": {
+        "run": "$p = gh api repos/Dotman-Bei/hidden-hand --jq .private; $c = @(gh api repos/Dotman-Bei/hidden-hand/collaborators --jq '.[].login') + @(gh api repos/Dotman-Bei/hidden-hand/invitations --jq '.[].invitee.login'); if ($p -eq 'false' -or ($c -contains 'jonasXchen')) { 'REPO-ACCESS: PASS' } else { 'REPO-ACCESS: FAIL' }",
+        "expect": "PASS — `REPO-ACCESS: PASS`"
+      },
+      "commit": "chore(gates): repo open to the judges",
+      "human_gate": true,
+      "allow_empty": true,
+      "status": "pending",
+      "gate_profile": "account"
+    },
+    {
+      "id": "gates:19",
+      "subsystem": "gates",
+      "title": "Submission",
+      "plan": "docs/superpowers/plans/2026-11-26-gates.md",
+      "depends_on": [
+        "gates:17",
+        "gates:18"
+      ],
+      "effort": "low",
+      "model_tier": "top",
+      "files": {
+        "create": [],
+        "modify": [
+          "docs/gates/submission-draft.md",
+          "README.md"
+        ],
+        "test": []
+      },
+      "provides": [
+        "submitted to build.magicblock.app (Solana Blitz V10)"
+      ],
+      "requires": [
+        "docs/proof/devnet-round.md (final; base-layer delegation tx = the form's explorer link)",
+        "Dotman-Bei/hidden-hand public, or jonasXchen invited"
+      ],
+      "gate": {
+        "run": "if ((Select-String -Path docs/gates/submission-draft.md,README.md -SimpleMatch 'TBD-post-build' -Quiet) -or -not (Select-String -Path docs/gates/submission-draft.md -Pattern '^Submitted: 2026-11-27' -Quiet)) { 'SUBMISSION: FAIL' } else { 'SUBMISSION: PASS' }",
+        "expect": "PASS — `SUBMISSION: PASS`"
+      },
+      "commit": "chore(gates): submitted to Solana Blitz V10",
+      "human_gate": true,
+      "allow_empty": false,
+      "status": "pending",
+      "gate_profile": "submission"
+    },
+    {
+      "id": "program:20",
+      "subsystem": "program",
+      "title": "Commit-reveal instructions (program delta)",
+      "plan": "docs/superpowers/plans/2026-11-26-fallback.md",
+      "depends_on": [
+        "program:4",
+        "gates:14",
+        "program:1"
+      ],
+      "effort": "xhigh",
+      "model_tier": "top",
+      "files": {
+        "create": [],
+        "modify": [
+          "program/engine/Cargo.toml",
+          "program/engine/src/lib.rs",
+          "program/programs/hidden-hand/src/lib.rs",
+          "program/Cargo.lock",
+          "client/src/idl/hidden_hand.json",
+          "client/src/idl/hidden_hand.ts"
+        ],
+        "test": []
+      },
+      "provides": [
+        "hidden_hand_engine::commitment_of(secret: &[u8; 32]) -> [u8; 32]",
+        "hidden_hand_engine::cards_for_seat(seed: &[u8; 32], secret: &[u8; 32], seat: u8) -> [u8; 2]",
+        "ix callback_deal_cr(randomness: [u8; 32])",
+        "ix reveal_secret(secret: [u8; 32]) [ER; accounts table, hand, owner]"
+      ],
+      "requires": [
+        "program/scripts/wsl-build.sh [build|sync-id] -> last line \"HH-GATE: PASS\"",
+        "lib.rs markers // [hh:instructions:market] // [hh:instructions:settle] // [hh:instructions:commit-reveal] // [hh:accounts:market] // [hh:accounts:settle] // [hh:accounts:commit-reveal]",
+        "ix settle_round() [ER; accounts payer, table, hand0..hand3; commits + undelegates table and 4 hands]"
+      ],
+      "gate": {
+        "run": "wsl -d Ubuntu-24.04 -u root --exec bash -l program/scripts/wsl-build.sh build",
+        "expect": "PASS — last line `HH-GATE: PASS`"
+      },
+      "commit": "feat(program): commit-reveal fallback deal (callback_deal_cr, reveal_secret)",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "client:21",
+      "subsystem": "client",
+      "title": "Commit-reveal DealAdapter and the default-mode switch (client delta)",
+      "plan": "docs/superpowers/plans/2026-11-26-fallback.md",
+      "depends_on": [
+        "program:20",
+        "client:5",
+        "client:2"
+      ],
+      "effort": "high",
+      "files": {
+        "create": [
+          "client/src/deal/commit-reveal.ts"
+        ],
+        "modify": [
+          "client/src/deal/index.ts",
+          "client/src/config.ts"
+        ],
+        "test": [
+          "client/test/commit-reveal.test.ts"
+        ]
+      },
+      "provides": [
+        "@hidden-hand/client: CrDealAdapter (mode \"commit-reveal\", devnet-as) via createDealAdapter(\"commit-reveal\", store); DEFAULT_DEAL_MODE = \"commit-reveal\"",
+        "@hidden-hand/client: commitmentOf(secret: Uint8Array): Uint8Array, cardsForSeat(seed: Uint8Array, secret: Uint8Array, seat: number): [number, number]"
+      ],
+      "requires": [
+        "hidden_hand_engine::commitment_of(secret: &[u8; 32]) -> [u8; 32]",
+        "hidden_hand_engine::cards_for_seat(seed: &[u8; 32], secret: &[u8; 32], seat: u8) -> [u8; 2]",
+        "ix reveal_secret(secret: [u8; 32]) [ER; accounts table, hand, owner]",
+        "@hidden-hand/client: createDealAdapter(mode: DealMode, store: SecretStore): DealAdapter",
+        "@hidden-hand/client: interface DealAdapter { mode; erRpc; validator; commitmentFor(table, owner): Uint8Array; erConnection(identity: Keypair): Promise<Connection>; afterDelegate(ctx: DealContext): Promise<string[]>; readOwnHand(ctx: DealContext, owner: Keypair): Promise<[number, number] | null>; reveal(ctx: DealContext, seatKeys: Keypair[]): Promise<string[]> }",
+        "@hidden-hand/client: interface DealContext { roundId: BN; table: PublicKey; seatOwners: PublicKey[]; payer: Keypair }",
+        "@hidden-hand/client: interface SecretStore { get(key: string): Uint8Array | null; set(key: string, value: Uint8Array): void } + memorySecretStore()"
+      ],
+      "gate": {
+        "run": "pnpm --filter @hidden-hand/client verify",
+        "expect": "PASS — `tsc` prints nothing; vitest reports `7 passed` test files."
+      },
+      "commit": "feat(client): commit-reveal deal adapter and fallback default mode",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    }
+  ]
+}

@@ -34,13 +34,13 @@
 | # | Question | Answer | Source |
 |---|---|---|---|
 | 1 | Who runs the Day-1 spike's devnet step? | Two early human gates inside Step 2 (spike deploy, spike run), executed by the gate-concierge in its own session on per-gate consent. Wallet + devnet funding are earlier human gates the preflight concierge completes before the spike pause. The orchestrator pauses at the spike, commits `docs/spike/spike-result.md`, reports the (a)(b)(c) line, resumes with the manifest the user picks. | user, turn 2 |
-| 2 | How does the fallback switch? | `docs/superpowers/manifest.json` = TEE path; `docs/superpowers/manifest-fallback.json` = the same DAG plus two delta tasks (`program:1f`, `client:2f`). Switch = copy the fallback over `manifest.json` + commit. Only deal/reveal-dependent tasks wait for the spike. | user, turns 2–3 |
+| 2 | How does the fallback switch? | `docs/superpowers/manifest.json` = TEE path; `docs/superpowers/manifest-fallback.json` = the same DAG plus two delta tasks (`program:20`, `client:21`). Switch = copy the fallback over `manifest.json` + commit. Only deal/reveal-dependent tasks wait for the spike. | user, turns 2–3 |
 | 3 | Program keypair | One fixed program keypair for the spike deploy and the final deploy, at `/root/.config/hidden-hand/program-keypair.json` inside WSL (outside every repo), created by the build script with `--silent`, never printed; `declare_id!` synced to it before each deploy; `solana_version = "3.1.9"` under `[toolchain]`. | user, turn 2 |
 | 4 | Market maker | (A) linear-impact market maker. | approved, turn 3 |
 | 5 | Bot convergence | Information structure: the asset is a **sum of private signals**, so each seat's information is worth exactly `own − 16` points; with **1 contract = 1 point of price impact**, a bot holding the target position `own − 16` moves the price by exactly its information. The close is 64 + Σ(own − 16) = the hidden sum, ± the bots' wobble. Monte Carlo below; it is the gate of `bots:6` (≥ 60 % of ≥ 1000 seeded deals close within 4). | user change 1, turn 3 |
 | 6 | Line endings | `.gitattributes`: `*.sh`, `Anchor.toml`, `Cargo.toml` → `eol=lf`; every path in `wsl-build.sh` quoted. | user change 2 |
 | 7 | Engine drift | One golden-vector file `program/engine-vectors.json` consumed by the Rust engine test and the TS engine test. | user change 3 |
-| 8 | Early integration | Human gate `gates:early-round` = full-program deploy + one real devnet round as soon as `program:1–4` and `bots:7` are green. The Step-3 final redeploy + closing round stay. | user change 4 |
+| 8 | Early integration | Human gate `gates:15` = full-program deploy + one real devnet round as soon as `program:1–4` and `bots:7` are green. The Step-3 final redeploy + closing round stay. | user change 4 |
 | 9 | Proof | `docs/proof/devnet-round.md` records base-layer delegate + commit/undelegate + claim signatures, not only ER ones. The submission's explorer link = a base-layer delegation tx of OUR program; the program ID goes in on-chain addresses; never a MagicBlock shared account. | user change 5 |
 | 10 | Frontend kind + deal | Kind **software** (the skill's table puts fintech/trading apps there; the gaming deal only offers a photo hero, which breaks "the hero is the live pit"). Deal: palette **plum-black-pink** (fallback **lunar-grey-bronze** if the gate flags violet), type **Chivo + Chivo Mono** (the first pairing, Familjen + IBM Plex Mono, is excluded: IBM Plex is basanos's), radius **sharp**, hero **centred**, moments **liquid-type** + **line-carries-colour**, lists **nav-cards · footer-statement · close-word · surface-pairs · tonal · dots**. No nightcrew/stigi/basanos palette or type pair. | approved, turn 3 |
 
@@ -115,7 +115,7 @@ docs/proof/              devnet round proof (base-layer + ER signatures, program
 | `trade(side, qty)` | ER | program:3 | engine `quote`, update seat + price, append to the trade ring |
 | `settle_round()` | ER | program:4 | P&L + winner, phase → Settled, commit + undelegate Table + 4 Hands |
 | `claim_pot()` | base | program:4 | pay the whole Vault to the winner, `paid = true` |
-| `callback_deal_cr(randomness)` / `reveal_secret(secret)` | ER | program:1f (fallback only) | store the seed; verify `sha256(secret) == commitment`, derive that seat's cards; last reveal → Revealed |
+| `callback_deal_cr(randomness)` / `reveal_secret(secret)` | ER | program:20 (fallback only) | store the seed; verify `sha256(secret) == commitment`, derive that seat's cards; last reveal → Revealed |
 
 The **bell** is `reveal_hands` + `settle_round` (TEE) or the four `reveal_secret` + `settle_round` (fallback), sent by
 the round runner after `end_ts`.
@@ -123,7 +123,7 @@ the round runner after `end_ts`.
 ### Clients
 
 - `client/` exposes `createDealAdapter(mode, store)` returning a `DealAdapter` (TEE in `client:2`; commit-reveal added by
-  `client:2f`) so `bots:7` and `web:9` never change between paths. TEE reads go through
+  `client:21`) so `bots:7` and `web:9` never change between paths. TEE reads go through
   `getAuthToken(TEE_URL, pubkey, sign)` → `new Connection(TEE_URL + "?token=" + token)`, with `waitUntilPermissionActive`
   after each permission.
 - **Keys:** the burner is read from `HH_BURNER_KEYPAIR_JSON` (a JSON byte array) — the user env var, else the git-ignored
@@ -156,15 +156,15 @@ line, trade tape (each row links to its ER signature), buy/sell controls with th
 ## Manifests and the spike decision
 
 TEE manifest (`manifest.json`): `program:1` spike → `client:2` (core + TEE adapter + `spike.ts`) → human gates
-`gates:wallet`, `gates:faucet` (preflight, parallel), `gates:spike-deploy`, `gates:spike-run`. Common work proceeds in
+`gates:11` wallet, `gates:12` faucet (preflight, parallel), `gates:13` spike deploy, `gates:14` spike run. Common work proceeds in
 parallel: `program:3` market, `program:4` settlement, `client:5` round API + TS engine, `bots:6` policy + Monte Carlo,
-`web:8` landing, `web:9` app. Deal-dependent: `bots:7` runner (depends on `gates:spike-run`), `gates:early-round`,
-`gates:final-deploy`, `gates:closing-round`. Then `docs:10` README, `gates:repo-public`, `gates:submission`.
+`web:8` landing, `web:9` app. Deal-dependent: `bots:7` runner (depends on `gates:14`), `gates:15` early full deploy + devnet round,
+`gates:16` final redeploy, `gates:17` closing round. Then `docs:10` README, `gates:18` repo access, `gates:19` submission.
 
 **Decision rule (hard):** if `docs/spike/spike-result.md` does not show `(a) PASS`, `(b) PASS`, `(c) PASS` by **2 h into
-Step 2**, the build switches to `manifest-fallback.json` and does not revisit. Fallback delta: `program:1f`
-(commit-reveal instructions on the same program, purely additive) and `client:2f` (commit-reveal adapter, default mode
-switch); in the fallback manifest `bots:7`, `gates:early-round` and `gates:final-deploy` also depend on both.
+Step 2**, the build switches to `manifest-fallback.json` and does not revisit. Fallback delta: `program:20`
+(commit-reveal instructions on the same program, purely additive) and `client:21` (commit-reveal adapter, default mode
+switch); in the fallback manifest `bots:7`, `gates:15` and `gates:16` also depend on both.
 
 ## Testing strategy
 
@@ -181,6 +181,11 @@ switch); in the fallback manifest `bots:7`, `gates:early-round` and `gates:final
 `open_table`, each `delegate_pda`, the commit/undelegate landing (`settle_round`'s base-layer commit is read from the
 Table's signature history on the base layer), `claim_pot`; ER signatures for `request_deal`, `callback_deal`, trades,
 `reveal_hands`, `settle_round`. Explorer link for the form = a base-layer `delegate_pda` signature of our program.
+
+## Wording obligations (README, submission draft, demo script)
+
+1. Describe the market as a **linear information market** where each trade's size encodes what a sealed hand knows; convergence is **by design**, not emergent bot cleverness.
+2. Say plainly that **a random or idle human breaks the reveal**, and that `--demo` fills seat 4 with a bot.
 
 ## Risks
 
