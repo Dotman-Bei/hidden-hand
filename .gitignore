@@ -1,0 +1,16 @@
+# secrets: the burner lives in the user env var or this git-ignored file, never in the repo
+.env
+.env.*
+!.env.example
+*-keypair.json
+burner.json
+# build output
+node_modules/
+program/target/
+program/.anchor/
+web/dist/
+# the design kit is copied in at build time and never committed
+web/public/assets/
+web/.taste-skill/
+web/shots/
+.taste-skill/
