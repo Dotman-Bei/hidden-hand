@@ -66,7 +66,12 @@ Commands are verbatim from `docs/superpowers/plans/2026-11-26-gates.md` (PowerSh
   2. Gate: `wsl -d Ubuntu-24.04 -u root --exec bash -l program/scripts/wsl-deploy.sh check` → last line starts `HH-DEPLOY: PASS`
 - **Evidence file:** `docs/proof/deploy-log.md` (the script appends the row; the orchestrator commits it).
 - **Risk:** low. The fixed program keypair stays in WSL. Check `solana --version` = 3.1.9 before the run (no bare `anchor` outside `program/`).
-- **Status:** pending.
+- **Status:** **deployed and verified on-chain 2026-11-26T20:15Z. The plan's gate command FAILS on a gate-script bug → BLOCKED until the orchestrator/architect fixes `wsl-deploy.sh check`.**
+  - Pre-checks: WSL `solana-cli 3.1.9`; the script was read before running (it prints only the program ID and signature; the burner goes to a 0600 temp file, removed by trap; afterwards `/root/.config/hidden-hand/` holds only `program-keypair.json`).
+  - Deploy: `HH-DEPLOY: PASS HZdoTuj1N8u1EBsVB6Bd6cgXDVnswb1cX1nFkX4miRFb`. Deploy signature `52uTwHf4i3WxiNGSEtFF4T4qJxiRHH4eCAANNBSd868W5bqfWURFK8ZRe1ZM87hrbh9dL4goqnBggZd1TRc6ZuRQ` (`solana confirm` → Finalized). Program ID matches `Anchor.toml` `[programs.devnet]`. `docs/proof/deploy-log.md` was created with that row and left **uncommitted** for the orchestrator's gates:13 commit.
+  - On-chain read (signer-free `solana account`, plus `solana program show … --keypair <program keypair path>`): executable, owner `BPFLoaderUpgradeab1e…`, ProgramData `3LfCphCBjAkQDKLDMT7o3xW91H3y38gDfcLpqzixkvT9`, **Authority = burner** `BT9T…ks1Bs`, slot 526625169, data length 415,648 bytes, ProgramData rent 2.11237068 SOL. Burner balance after: 17.8847212 SOL.
+  - **Gate bug:** `wsl-deploy.sh check` prints `HH-DEPLOY: FAIL (… is not deployed on devnet)` although the program is deployed. `solana program show` (CLI 3.1.9) exits non-zero with `No default signer found` because WSL has no `~/.config/solana/id.json`, and the script hides stderr with `>/dev/null 2>&1`. **Fix (product code; the concierge does not edit it):** in the `check` branch use `solana account "${PROGRAM_ID}" --url "${RPC}"`, or add `--keypair "${KEY}"` to `solana program show`. Both are read-only and verified to work above. Gates 15/16 use the same check.
+  - **Build warning, for the architect (not a gate failure):** `cargo build-sbf` reported `RevealHands … try_accounts … Stack offset of 4784 exceeded max offset of 4096 by 688 bytes … may cause undefined behavior during execution`. The reveal instruction can fail at runtime (spike check / gates:15 round). Likely fix: `Box<Account<…>>` the large accounts in `RevealHands`.
 
 ### gates:14 — Spike run (TEE path vs fallback)
 - **Tier:** A (signs with the burner and burner-derived seat keys). **Pass:** early.
@@ -143,3 +148,5 @@ Every OAuth, CAPTCHA, faucet request and on-chain action is logged here.
 | 2026-11-26T20:10Z | gates:12 | **OAuth consent** on github.com: "Devnet Faucet" by ferric, account Dotman-Bei, scopes `read:user` `user:email` (read-only). No CAPTCHA. | consent screen read before approving |
 | 2026-11-26T20:11Z | gates:12 | **Faucet request**: devnetfaucet.org, 20 SOL, anonymous listing | "Airdrop successful"; tx `3XUB3EEg…irZbuB`; balance 20 SOL |
 | 2026-11-26T20:12Z | gates:12 | WSL Agave drift 3.1.10 → re-pinned `agave-install init 3.1.9` | S2/S3/S7/S4 PASS after re-pin |
+| 2026-11-26T20:15Z | gates:13 | **On-chain deploy** of `hidden_hand` (burner = payer + upgrade authority) via `wsl-deploy.sh deploy` | sig `52uTwHf4…Tc6ZuRQ` Finalized; program `HZdoTuj1…miRFb`; burner 20 → 17.88 SOL |
+| 2026-11-26T20:20Z | gates:13 | Plan gate `wsl-deploy.sh check` → FAIL (gate-script bug: `No default signer found`, stderr hidden); program verified deployed by signer-free reads | routed to the orchestrator/architect |
