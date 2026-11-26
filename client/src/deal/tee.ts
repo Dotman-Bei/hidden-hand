@@ -1,6 +1,6 @@
 import type { IdlAccounts } from "@coral-xyz/anchor";
 import { MAGIC_PROGRAM_ID, PERMISSION_PROGRAM_ID, permissionPdaFromAccount } from "@magicblock-labs/ephemeral-rollups-sdk";
-import type { Connection, Keypair, PublicKey } from "@solana/web3.js";
+import type { AccountInfo, Commitment, Connection, Keypair, PublicKey } from "@solana/web3.js";
 import { EPHEMERAL_VAULT_ID, TEE_RPC, TEE_VALIDATOR } from "../config";
 import { teeConnection } from "../conn";
 import type { HiddenHand } from "../idl/hidden_hand";
@@ -80,14 +80,19 @@ export class TeeDealAdapter implements DealAdapter {
     const program = makeProgram(await this.erConnection(owner), owner);
     const address = handPda(ctx.table, owner.publicKey);
     const got: { hand?: HandAccount } = {};
-    // a blurred / undecodable account counts as a miss (the decode throws and the poll keeps going)
+    // Keep polling until the owner sees the DEALT hand: a missing, blurred / undecodable or not-yet-dealt read is a
+    // miss (the first readable read used to end the poll even when it was the pre-deal state). Each attempt reads at
+    // "confirmed" (as MagicBlock's private examples do) and, on a miss, again at "processed".
+    const readAt = async (commitment: Commitment): Promise<AccountInfo<Buffer> | null> => {
+      const i = await program.provider.connection.getAccountInfo(address, commitment);
+      if (!isReadable(i)) return null;
+      const hand = program.coder.accounts.decode<HandAccount>("Hand", i.data);
+      if (!hand.dealt) return null;
+      got.hand = hand;
+      return i;
+    };
     const info = await pollReadable(
-      async () => {
-        const i = await program.provider.connection.getAccountInfo(address, "confirmed");
-        if (!isReadable(i)) return null;
-        got.hand = program.coder.accounts.decode<HandAccount>("Hand", i.data);
-        return i;
-      },
+      async () => (await readAt("confirmed").catch(() => null)) ?? (await readAt("processed")),
       READABLE_TIMEOUT_MS,
       READABLE_EVERY_MS,
     );

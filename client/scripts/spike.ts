@@ -1,9 +1,10 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { type Connection, type Keypair, LAMPORTS_PER_SOL, type PublicKey } from "@solana/web3.js";
+import { permissionPdaFromAccount } from "@magicblock-labs/ephemeral-rollups-sdk";
+import { type AccountInfo, type Commitment, type Connection, type Keypair, LAMPORTS_PER_SOL, type PublicKey } from "@solana/web3.js";
 import BN from "bn.js";
-import { AS_RPC, AS_VALIDATOR, PROGRAM_ID, TEE_VALIDATOR } from "../src/config";
-import { baseConnection, publicErConnection } from "../src/conn";
+import { AS_RPC, AS_VALIDATOR, HAND_SEED, PROGRAM_ID, TEE_RPC, TEE_VALIDATOR } from "../src/config";
+import { baseConnection, publicErConnection, teeConnection } from "../src/conn";
 import { TeeDealAdapter } from "../src/deal/tee";
 import type { DealContext } from "../src/deal/types";
 import { deriveBotKeypair } from "../src/keys";
@@ -11,7 +12,18 @@ import { REPO_ROOT, loadBurner } from "../src/node";
 import { handPda, tablePda } from "../src/pda";
 import { makeProgram } from "../src/program";
 import { delegatePdas, fetchTable, fundAccounts, joinTable, openTable, requestDeal, waitForPhase, waitUntilOnEr } from "../src/round-base";
-import { type CheckResult, type CuEntry, cuEntriesForTx, formatCuLines, formatSpikeResult, formatVersionLine } from "../src/spike-report";
+import {
+  type CheckResult,
+  type CuEntry,
+  type ReadAttempt,
+  compressAttempts,
+  cuEntriesForTx,
+  describeAccountRead,
+  findPermissionMember,
+  formatCuLines,
+  formatSpikeResult,
+  formatVersionLine,
+} from "../src/spike-report";
 
 const SPIKE_DURATION_SECS = 30;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -59,6 +71,110 @@ async function cuReport(track: Tracked[]): Promise<string[]> {
   return formatCuLines(entries);
 }
 
+const asError = (e: unknown) => (e instanceof Error ? e : new Error(String(e)));
+const isoMs = (x: number) => new Date(x > 1e12 ? x : x * 1000).toISOString();
+
+/** A TEE connection with the pubkey its token was issued for (fresh token: the identity's own login). */
+interface Reader { name: string; kp: Keypair; conn: Connection; expiresAt: number }
+
+async function reader(name: string, kp: Keypair): Promise<Reader> {
+  const t = await teeConnection(kp);
+  return { name, kp, conn: t.connection, expiresAt: t.expiresAt };
+}
+
+/** One raw getAccountInfo of `account`, described; `asHand` runs our Hand decoder over the data. */
+async function probe(r: Reader, account: PublicKey, commitment: Commitment, asHand: boolean): Promise<string> {
+  let info: AccountInfo<Buffer> | null;
+  try {
+    info = await r.conn.getAccountInfo(account, commitment);
+  } catch (e) {
+    return describeAccountRead(asError(e));
+  }
+  if (!asHand || info === null) return describeAccountRead(info);
+  let dealt: boolean | "undecodable";
+  try {
+    dealt = makeProgram(r.conn, r.kp).coder.accounts.decode<{ dealt: boolean }>("Hand", info.data).dealt;
+  } catch {
+    dealt = "undecodable";
+  }
+  return describeAccountRead(info, dealt);
+}
+
+/** Before request_deal: can the owner / a stranger read the (undealt) hand right after the permissions were created? */
+async function preDealDiagnostics(owner: Keypair, stranger: Keypair, table: PublicKey): Promise<string[]> {
+  const hand = handPda(table, owner.publicKey);
+  try {
+    const o = await reader("owner", owner);
+    const s = await reader("stranger", stranger);
+    return [
+      `- pre-deal owner read (confirmed): ${await probe(o, hand, "confirmed", true)}`,
+      `- pre-deal stranger read (confirmed): ${await probe(s, hand, "confirmed", true)}`,
+    ];
+  } catch (e) {
+    return [`- pre-deal diagnostics failed: ${errText(e)}`];
+  }
+}
+
+/** After the deal: every raw read the (a) check depends on, for the owner, a stranger, the payer and no token at all. */
+async function aDiagnostics(burner: Keypair, owner: Keypair, stranger: Keypair, table: PublicKey): Promise<string[]> {
+  const d: string[] = [];
+  const hand = handPda(table, owner.publicKey);
+  const perm = permissionPdaFromAccount(hand);
+  d.push(`- hand pda: ${hand.toBase58()} = PDA(["${HAND_SEED}", table ${table.toBase58()}, owner ${owner.publicKey.toBase58()}], ${PROGRAM_ID.toBase58()})`);
+  d.push(`- hand permission pda: ${perm.toBase58()}`);
+  try {
+    const o = await reader("owner", owner);
+    const s = await reader("stranger", stranger);
+    const p = await reader("payer", burner);
+    for (const r of [o, s, p]) d.push(`- token ${r.name}: issued for ${r.kp.publicKey.toBase58()}, expiresAt ${r.expiresAt} (${isoMs(r.expiresAt)})`);
+
+    try {
+      const v = await fetchTable(makeProgram(o.conn, owner), table);
+      const seat = v?.seats.find((x) => x.owner.equals(owner.publicKey));
+      d.push(
+        `- control: public table via owner connection: ${await probe(o, table, "confirmed", false)}; phase=${v?.phase ?? "unreadable"}; ` +
+          `owner seat ${seat ? `found, seat.hand ${seat.hand.equals(hand) ? "==" : "!="} hand pda` : "NOT found"}`,
+      );
+    } catch (e) {
+      d.push(`- control: public table via owner connection failed: ${errText(e)}`);
+    }
+
+    for (const r of [p, o]) {
+      try {
+        const i = await r.conn.getAccountInfo(perm, "confirmed");
+        const m = i === null ? "" : `; owner (token pubkey) as permission member: ${findPermissionMember(i.data, owner.publicKey.toBytes())}`;
+        d.push(`- permission via ${r.name} connection: ${describeAccountRead(i)}${m}`);
+      } catch (e) {
+        d.push(`- permission via ${r.name} connection: ${describeAccountRead(asError(e))}`);
+      }
+    }
+
+    const attempts: ReadAttempt[] = [];
+    const t0 = Date.now();
+    for (;;) {
+      const result = await probe(o, hand, "confirmed", true);
+      attempts.push({ atMs: Date.now() - t0, result });
+      if (result.endsWith("dealt=true") || Date.now() - t0 >= 20_000) break;
+      await sleep(400);
+    }
+    d.push(...compressAttempts("owner read (confirmed, 400 ms / 20 s poll)", attempts));
+    d.push(`- owner read (processed): ${await probe(o, hand, "processed", true)}`);
+    try {
+      const [m] = await o.conn.getMultipleAccountsInfo([hand], "confirmed");
+      d.push(`- owner getMultipleAccountsInfo (confirmed): ${describeAccountRead(m)}`);
+    } catch (e) {
+      d.push(`- owner getMultipleAccountsInfo (confirmed): ${describeAccountRead(asError(e))}`);
+    }
+    d.push(`- stranger read (confirmed): ${await probe(s, hand, "confirmed", true)}`);
+    d.push(`- payer read (confirmed, non-member): ${await probe(p, hand, "confirmed", true)}`);
+    const anon: Reader = { name: "no-token", kp: stranger, conn: publicErConnection(TEE_RPC), expiresAt: 0 };
+    d.push(`- no-token read (confirmed): ${await probe(anon, hand, "confirmed", true)}`);
+  } catch (e) {
+    d.push(`- diagnostics failed: ${errText(e)}`);
+  }
+  return d;
+}
+
 async function versionLine(name: string, conn: () => Promise<Connection>): Promise<string> {
   try {
     return formatVersionLine(name, await (await conn()).getVersion());
@@ -76,6 +192,7 @@ async function main(): Promise<void> {
   const roundId = new BN(Date.now());
   const track: Tracked[] = [];
   const info: string[] = [];
+  const diag: string[] = [];
   let ctx: DealContext | null = null;
 
   info.push(await versionLine("tee", () => tee.erConnection(burner)));
@@ -96,6 +213,7 @@ async function main(): Promise<void> {
   if (ctx) {
     const er = makeProgram(await tee.erConnection(burner), burner);
     let dealt = false;
+    diag.push(...(await preDealDiagnostics(seats[0], stranger, ctx.table)));
     try {
       track.push({ label: "tee request_deal", sig: await requestDeal(er, burner, ctx.table, 7), conn: er.provider.connection });
       await waitForPhase(er, ctx.table, "trading", 45_000);
@@ -106,6 +224,7 @@ async function main(): Promise<void> {
     }
 
     let own: [number, number] | null = null;
+    if (dealt) diag.push(...(await aDiagnostics(burner, seats[0], stranger, ctx.table)));
     if (dealt) {
       try {
         own = await tee.readOwnHand(ctx, seats[0]);
@@ -180,7 +299,7 @@ async function main(): Promise<void> {
     info.push(`- cu report failed: ${errText(e)}`);
   }
 
-  const out = formatSpikeResult(new Date(), PROGRAM_ID.toBase58(), results, info);
+  const out = formatSpikeResult(new Date(), PROGRAM_ID.toBase58(), results, info, diag);
   mkdirSync(resolve(REPO_ROOT, "docs/spike"), { recursive: true });
   writeFileSync(resolve(REPO_ROOT, "docs/spike/spike-result.md"), out, "utf8");
   console.log(out);

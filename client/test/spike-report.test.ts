@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { cuEntriesForTx, formatCuLines, formatSpikeResult, formatVersionLine, programInvocations } from "../src/spike-report";
+import {
+  compressAttempts,
+  cuEntriesForTx,
+  describeAccountRead,
+  findPermissionMember,
+  formatCuLines,
+  formatSpikeResult,
+  formatVersionLine,
+  memberFlagNames,
+  programInvocations,
+} from "../src/spike-report";
 
 describe("formatSpikeResult", () => {
   it("prints one line per check and the eligibility verdict", () => {
@@ -32,6 +42,55 @@ describe("formatSpikeResult", () => {
     expect(lines.indexOf("- validator tee: 2.0.5 / feature-set=1")).toBeGreaterThan(lastCheck);
     expect(lines.indexOf("- cu x: 5")).toBeGreaterThan(lastCheck);
     expect(out).toMatch(/^\(a\) PASS/m);
+  });
+});
+
+describe("(a) diagnostics", () => {
+  const owner = { toBase58: () => "HHprog" };
+
+  it("puts the diagnostics section after the informational one, check lines first", () => {
+    const out = formatSpikeResult(new Date(0), "P", [{ id: "a", pass: false, detail: "owner read returned null" }], ["- cu x: 5"], ["- owner read #1 (t+0 ms) x1: null"]);
+    const lines = out.split("\n");
+    expect(out).toMatch(/^\(a\) FAIL/m);
+    expect(lines.indexOf("## (a) diagnostics")).toBeGreaterThan(lines.indexOf("## Informational"));
+    expect(lines.indexOf("- owner read #1 (t+0 ms) x1: null")).toBeGreaterThan(lines.indexOf("## (a) diagnostics"));
+    expect(formatSpikeResult(new Date(0), "P", [], ["- cu x: 5"])).not.toContain("## (a) diagnostics");
+  });
+
+  it("describes a raw read: null, error, or lamports/owner/len/head/dealt", () => {
+    expect(describeAccountRead(null)).toBe("null");
+    expect(describeAccountRead(new Error("401\nUnauthorized"))).toBe("error: 401 Unauthorized");
+    const data = Uint8Array.from({ length: 20 }, (_, i) => i);
+    expect(describeAccountRead({ lamports: 7, owner, data }, true)).toBe("lamports=7 owner=HHprog len=20 head=000102030405060708090a0b0c0d0e0f dealt=true");
+    expect(describeAccountRead({ lamports: 7, owner, data: new Uint8Array(0) }, "undecodable")).toBe("lamports=7 owner=HHprog len=0 head= dealt=undecodable");
+    expect(describeAccountRead({ lamports: 1, owner, data: new Uint8Array(2) })).toBe("lamports=1 owner=HHprog len=2 head=0000");
+  });
+
+  it("collapses runs of identical attempts into one line each, keeping order", () => {
+    const lines = compressAttempts("owner read", [
+      { atMs: 0, result: "null" },
+      { atMs: 400, result: "null" },
+      { atMs: 800, result: "null" },
+      { atMs: 1200, result: "error: 429" },
+      { atMs: 1600, result: "null" },
+    ]);
+    expect(lines).toEqual([
+      "- owner read #1-3 (t+0..800 ms) x3: null",
+      "- owner read #4 (t+1200 ms) x1: error: 429",
+      "- owner read #5 (t+1600 ms) x1: null",
+    ]);
+    expect(compressAttempts("x", [])).toEqual(["- x: no attempts"]);
+  });
+
+  it("finds a member pubkey and names its flags in permission data", () => {
+    const member = Uint8Array.from({ length: 32 }, (_, i) => 200 + (i % 50));
+    const data = new Uint8Array(40 + 32);
+    data[39] = 0x03;
+    data.set(member, 40);
+    expect(findPermissionMember(data, member)).toBe("member found at byte 40, flags=0x03 (AUTHORITY|TX_LOGS)");
+    expect(findPermissionMember(new Uint8Array(40), member)).toBe("member not found (len 40, bytes 34..39=0000000000)");
+    expect(memberFlagNames(0)).toBe("none");
+    expect(memberFlagNames(0x1e)).toBe("TX_LOGS|TX_BALANCES|TX_MESSAGE|ACCOUNT_SIGNATURES");
   });
 });
 
