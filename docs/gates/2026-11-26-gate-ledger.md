@@ -36,7 +36,12 @@ Commands are verbatim from `docs/superpowers/plans/2026-11-26-gates.md` (PowerSh
   3. Gate: `git check-ignore -q .env; if ($?) { node -e "const fs=require('fs');const m=fs.existsSync('.env')&&fs.readFileSync('.env','utf8').match(/^HH_BURNER_KEYPAIR_JSON=(.+)$/m);let ok=false;try{const a=JSON.parse(m[1].trim());ok=Array.isArray(a)&&a.length===64}catch(e){}console.log(ok?'BURNER-PRESENT: PASS':'BURNER-PRESENT: FAIL')" } else { 'BURNER-PRESENT: FAIL (.env is not git-ignored)' }` → `BURNER-PRESENT: PASS`
 - **Storage:** `HH_BURNER_KEYPAIR_JSON` in the git-ignored repo-root `.env` only (no `setx`, per the plan).
 - **Risk:** ~zero (devnet-only disposable key). Never `cat`/print `.env`; never write `.env` from PowerShell.
-- **Status:** pending (blocked on program:1).
+- **Status:** **done 2026-11-26T20:09Z** (your "run gates:11").
+  - **Burner public key:** `BT9TYK3HL5Bc7rZfTNrPiGkjGXDKeDpdEPgWBqAks1Bs` (devnet only).
+  - **Stored:** env-var name `HH_BURNER_KEYPAIR_JSON`, location: repo-root `.env`. Git-ignored (`git status --ignored` → `!! .env`); one LF line, no BOM. No user env var set. The temp keyfile `burner-new.json` was deleted (the WSL dir holds only `program-keypair.json`).
+  - **Gate:** `BURNER-PRESENT: PASS`.
+  - **Ordering note:** started before the orchestrator's WAITING signal. The plan's precondition (`git check-ignore -q .env` → True) held because program:1's `.gitignore` was in the working tree, and program:1 was committed during the gate (`3cd1f97`).
+  - **Plan defect (for the orchestrator/guide):** the plan's Step 1 command fails **verbatim** in PowerShell 5.1 (`bash: unexpected EOF while looking for matching ')'`). PS 5.1 removes the embedded `"` when passing the argument to `wsl.exe`. The failed attempt wrote nothing (checked: no `.env`, no temp file). It ran with every inner `"` escaped as `\"`, which gives bash the identical script. Any other plan command that embeds `"` inside a `wsl … bash -lc '…'` argument has the same problem.
 
 ### gates:12 — Devnet SOL for the burner (target ~10, minimum 5)
 - **Tier:** A on the primary route; fallback 1 is a user click (see the faucet probe). **Pass:** preflight.
@@ -129,3 +134,4 @@ Every OAuth, CAPTCHA, faucet request and on-chain action is logged here.
 | UTC | Gate | Action | Evidence |
 |---|---|---|---|
 | 2026-11-26T20:00Z | imp-faucet | Read-only probe: faucet.solana.com, the Solana devnet SOL guide, devnetfaucet.org (pages read; no address entered, no claim, no sign-in); WSL `solana --url devnet cluster-version`. QuickNode blocked by the extension's site permissions. | Table above |
+| 2026-11-26T20:09Z | gates:11 | Burner created with WSL `solana-keygen` (plan command, inner quotes escaped for PS 5.1) → `.env`; gate run | pubkey `BT9TYK3HL5Bc7rZfTNrPiGkjGXDKeDpdEPgWBqAks1Bs`; `BURNER-PRESENT: PASS` |
