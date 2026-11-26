@@ -1,0 +1,95 @@
+import { MAGIC_PROGRAM_ID, PERMISSION_PROGRAM_ID, permissionPdaFromAccount, waitUntilPermissionActive } from "@magicblock-labs/ephemeral-rollups-sdk";
+import type { Connection, Keypair, PublicKey } from "@solana/web3.js";
+import { EPHEMERAL_VAULT_ID, TEE_RPC, TEE_VALIDATOR } from "../config";
+import { teeConnection } from "../conn";
+import { handPda } from "../pda";
+import { makeProgram } from "../program";
+import { fetchTable, waitUntilOnEr } from "../round-base";
+import { sendIxs } from "../tx";
+import type { DealAdapter, DealContext } from "./types";
+
+export class TeeDealAdapter implements DealAdapter {
+  readonly mode = "tee" as const;
+  readonly erRpc = TEE_RPC;
+  readonly validator: PublicKey = TEE_VALIDATOR;
+  private readonly conns = new Map<string, { connection: Connection; expiresAtMs: number }>();
+
+  commitmentFor(): Uint8Array {
+    return new Uint8Array(32);
+  }
+
+  async erConnection(identity: Keypair): Promise<Connection> {
+    const key = identity.publicKey.toBase58();
+    const hit = this.conns.get(key);
+    if (hit && hit.expiresAtMs - Date.now() > 60_000) return hit.connection;
+    const t = await teeConnection(identity);
+    const expiresAtMs = t.expiresAt > 1e12 ? t.expiresAt : t.expiresAt * 1000;
+    this.conns.set(key, { connection: t.connection, expiresAtMs });
+    return t.connection;
+  }
+
+  async afterDelegate(ctx: DealContext): Promise<string[]> {
+    const er = await this.erConnection(ctx.payer);
+    const program = makeProgram(er, ctx.payer);
+    const hands = ctx.seatOwners.map((o) => handPda(ctx.table, o));
+    await waitUntilOnEr(er, ctx.table, 30_000);
+    for (const h of hands) await waitUntilOnEr(er, h, 30_000);
+    const common = {
+      payer: ctx.payer.publicKey,
+      permissionProgram: PERMISSION_PROGRAM_ID,
+      ephemeralVault: EPHEMERAL_VAULT_ID,
+      magicProgram: MAGIC_PROGRAM_ID,
+    };
+    const ixs = [
+      await program.methods
+        .createTablePermission()
+        .accountsPartial({ table: ctx.table, permission: permissionPdaFromAccount(ctx.table), ...common })
+        .instruction(),
+    ];
+    for (let i = 0; i < hands.length; i++) {
+      ixs.push(
+        await program.methods
+          .createHandPermission(ctx.seatOwners[i])
+          .accountsPartial({ table: ctx.table, hand: hands[i], permission: permissionPdaFromAccount(hands[i]), ...common })
+          .instruction(),
+      );
+    }
+    const sig = await sendIxs(er, ixs, ctx.payer);
+    // returns false on timeout (never throws); a public permission (the table) has no members and never reports active
+    for (const account of hands) {
+      const ok = await waitUntilPermissionActive(TEE_RPC, account, 30_000);
+      if (!ok) throw new Error(`permission not active: ${account.toBase58()}`);
+    }
+    return [sig];
+  }
+
+  async readOwnHand(ctx: DealContext, owner: Keypair): Promise<[number, number] | null> {
+    const program = makeProgram(await this.erConnection(owner), owner);
+    const hand = await program.account.hand.fetchNullable(handPda(ctx.table, owner.publicKey));
+    if (!hand || !hand.dealt) return null;
+    return [hand.cards[0], hand.cards[1]];
+  }
+
+  async reveal(ctx: DealContext): Promise<string[]> {
+    const program = makeProgram(await this.erConnection(ctx.payer), ctx.payer);
+    const view = await fetchTable(program, ctx.table);
+    if (!view || view.phase !== "trading") return [];
+    const h = view.seats.map((s) => s.hand);
+    const ix = await program.methods
+      .revealHands()
+      .accountsPartial({
+        table: ctx.table,
+        hand0: h[0], hand1: h[1], hand2: h[2], hand3: h[3],
+        permission0: permissionPdaFromAccount(h[0]),
+        permission1: permissionPdaFromAccount(h[1]),
+        permission2: permissionPdaFromAccount(h[2]),
+        permission3: permissionPdaFromAccount(h[3]),
+        payer: ctx.payer.publicKey,
+        permissionProgram: PERMISSION_PROGRAM_ID,
+        ephemeralVault: EPHEMERAL_VAULT_ID,
+        magicProgram: MAGIC_PROGRAM_ID,
+      })
+      .instruction();
+    return [await sendIxs(program.provider.connection, [ix], ctx.payer)];
+  }
+}
