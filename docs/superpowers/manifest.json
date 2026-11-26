@@ -80,6 +80,7 @@
         "program:1"
       ],
       "effort": "high",
+      "model_tier": "top",
       "files": {
         "create": [
           "package.json",
@@ -102,7 +103,8 @@
           "client/src/spike-report.ts",
           "client/src/index.ts",
           "client/scripts/spike.ts",
-          "client/scripts/burner-balance.ts"
+          "client/scripts/burner-balance.ts",
+          "client/scripts/smoke.ts"
         ],
         "modify": [],
         "test": [
@@ -139,7 +141,7 @@
       ],
       "gate": {
         "run": "pnpm --filter @hidden-hand/client verify",
-        "expect": "PASS — `tsc` prints nothing and vitest reports `4 passed` test files."
+        "expect": "PASS — `tsc` prints nothing, vitest reports `4 passed` test files, and the last line is `SMOKE: OK`."
       },
       "commit": "feat(client): connections, TEE deal adapter, round base API, spike script",
       "human_gate": false,
@@ -269,7 +271,7 @@
       ],
       "gate": {
         "run": "pnpm --filter @hidden-hand/client verify",
-        "expect": "PASS — `tsc` prints nothing; vitest reports `6 passed` test files, including every golden-vector case."
+        "expect": "PASS — `tsc` prints nothing; vitest reports `6 passed` test files, including every golden-vector case; the last line is `SMOKE: OK`."
       },
       "commit": "feat(client): TS engine port on shared golden vectors, trade/settle/claim API",
       "human_gate": false,
@@ -329,13 +331,15 @@
         "gates:14"
       ],
       "effort": "high",
+      "model_tier": "top",
       "files": {
         "create": [
           "bots/src/index.ts",
           "bots/src/proof.ts",
           "bots/src/runner.ts",
           "bots/scripts/demo-round.ts",
-          "bots/scripts/check-proof.ts"
+          "bots/scripts/check-proof.ts",
+          "bots/scripts/smoke.ts"
         ],
         "modify": [
           "bots/package.json",
@@ -360,7 +364,7 @@
       ],
       "gate": {
         "run": "pnpm --filter @hidden-hand/bots verify",
-        "expect": "PASS — `tsc` prints nothing; vitest reports `3 passed` test files."
+        "expect": "PASS — `tsc` prints nothing; vitest reports `3 passed` test files; the last line is `SMOKE: OK`."
       },
       "commit": "feat(bots): demo-round runner with base-layer devnet proof",
       "human_gate": false,
@@ -389,11 +393,13 @@
           "web/src/shared/tokens.css",
           "web/src/shared/pitTimeline.ts",
           "web/src/shared/PriceChart.tsx",
+          "web/src/shared/chart.css",
           "web/src/landing/main.tsx",
           "web/src/landing/PitIllustration.tsx",
           "web/src/landing/landing.css",
           "web/public/share.jpg",
-          "web/public/icons/.gitkeep"
+          "web/public/icons/.gitkeep",
+          "web/public/icons/"
         ],
         "modify": [
           "pnpm-lock.yaml"
@@ -414,7 +420,7 @@
         "@hidden-hand/client/engine: START_PRICE_C, STEP_C, MAX_LOT, POS_CAP, MIN_PRICE_C, MAX_PRICE_C, SEATS, CARDS_PER_SEAT, HAND_MEAN, type Side, type TradeError, interface SeatBook {cashC, pos}, interface Fill, quote(priceC, pos, side, qty): Fill | TradeError, cardsFromRandomness(bytes): number[], hiddenSum(cards): number, pnlC(seat, sum): number, winner(seats, sum): number, handEdge(cards: [number, number]): number"
       ],
       "gate": {
-        "run": "pnpm --filter @hidden-hand/web verify; if ($?) { pnpm --filter @hidden-hand/web build }; if ($?) { Push-Location web; node \"$HOME/.claude/skills/design-taste-frontend/scripts/gate.mjs\" dist/index.html; Pop-Location }",
+        "run": "pnpm --filter @hidden-hand/web verify; if ($?) { pnpm --filter @hidden-hand/web build }; if ($?) { Push-Location web; node \"$HOME/.claude/skills/design-taste-frontend/scripts/gate.mjs\" dist/index.html --root dist; Pop-Location }",
         "expect": "PASS — vitest passes `pitTimeline.test.ts`, the build writes `web/dist/index.html`, and the gate's last line is `GATE: PASS`."
       },
       "commit": "feat(web): landing page with the illustrative pit hero (taste gate PASS)",
@@ -449,7 +455,8 @@
         "modify": [
           "web/vite.config.ts",
           "web/package.json",
-          "pnpm-lock.yaml"
+          "pnpm-lock.yaml",
+          "web/public/icons/"
         ],
         "test": [
           "web/test/states.test.ts"
@@ -470,7 +477,7 @@
         "@hidden-hand/client/engine: START_PRICE_C, STEP_C, MAX_LOT, POS_CAP, MIN_PRICE_C, MAX_PRICE_C, SEATS, CARDS_PER_SEAT, HAND_MEAN, type Side, type TradeError, interface SeatBook {cashC, pos}, interface Fill, quote(priceC, pos, side, qty): Fill | TradeError, cardsFromRandomness(bytes): number[], hiddenSum(cards): number, pnlC(seat, sum): number, winner(seats, sum): number, handEdge(cards: [number, number]): number"
       ],
       "gate": {
-        "run": "pnpm --filter @hidden-hand/web verify; if ($?) { pnpm --filter @hidden-hand/web build }; if ($?) { Push-Location web; node \"$HOME/.claude/skills/design-taste-frontend/scripts/gate.mjs\" dist/app/index.html; Pop-Location }",
+        "run": "pnpm --filter @hidden-hand/web verify; if ($?) { pnpm --filter @hidden-hand/web build }; if ($?) { Push-Location web; node \"$HOME/.claude/skills/design-taste-frontend/scripts/gate.mjs\" dist/app/index.html --root dist; Pop-Location }",
         "expect": "PASS — vitest passes both test files, the build writes `web/dist/app/index.html`, and the gate's last line is `GATE: PASS`."
       },
       "commit": "feat(web): live /app desk with chart, tape, states and on-chain record (taste gate PASS)",
@@ -518,7 +525,9 @@
       "subsystem": "gates",
       "title": "Burner wallet into the cross-session store",
       "plan": "docs/superpowers/plans/2026-11-26-gates.md",
-      "depends_on": [],
+      "depends_on": [
+        "program:1"
+      ],
       "effort": "low",
       "model_tier": "top",
       "files": {
@@ -810,7 +819,7 @@
         "Dotman-Bei/hidden-hand public, or jonasXchen invited"
       ],
       "gate": {
-        "run": "if ((Select-String -Path docs/gates/submission-draft.md,README.md -SimpleMatch 'TBD-post-build' -Quiet) -or -not (Select-String -Path docs/gates/submission-draft.md -Pattern '^Submitted: 2026-11-27' -Quiet)) { 'SUBMISSION: FAIL' } else { 'SUBMISSION: PASS' }",
+        "run": "git fetch -q; git diff --quiet origin/main -- README.md; $pushed = ($LASTEXITCODE -eq 0); if ($pushed -and -not (Select-String -Path docs/gates/submission-draft.md,README.md -SimpleMatch 'TBD-post-build' -Quiet) -and (Select-String -Path docs/gates/submission-draft.md -Pattern '^Submitted: 20\\d\\d-\\d\\d-\\d\\dT\\d\\d:\\d\\d' -Quiet)) { 'SUBMISSION: PASS' } else { 'SUBMISSION: FAIL' }",
         "expect": "PASS — `SUBMISSION: PASS`"
       },
       "commit": "chore(gates): submitted to Solana Blitz V10",

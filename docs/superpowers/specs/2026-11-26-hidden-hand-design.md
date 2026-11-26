@@ -162,7 +162,7 @@ parallel: `program:3` market, `program:4` settlement, `client:5` round API + TS 
 `gates:16` final redeploy, `gates:17` closing round. Then `docs:10` README, `gates:18` repo access, `gates:19` submission.
 
 **Decision rule (hard):** if `docs/spike/spike-result.md` does not show `(a) PASS`, `(b) PASS`, `(c) PASS` by **2 h into
-Step 2**, the build switches to `manifest-fallback.json` and does not revisit. Fallback delta: `program:20`
+Step 2** (clock: `docs/spike/clock.md`), the build switches to the fallback by **merging** `manifest-fallback.json` into `manifest.json` (live task status kept) and does not revisit. Fallback delta: `program:20`
 (commit-reveal instructions on the same program, purely additive) and `client:21` (commit-reveal adapter, default mode
 switch); in the fallback manifest `bots:7`, `gates:15` and `gates:16` also depend on both.
 
