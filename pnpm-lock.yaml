@@ -8,6 +8,25 @@ importers:
 
   .: {}
 
+  bots:
+    dependencies:
+      '@hidden-hand/client':
+        specifier: workspace:*
+        version: link:../client
+    devDependencies:
+      '@types/node':
+        specifier: ^22.15.0
+        version: 22.20.7
+      tsx:
+        specifier: ^4.20.3
+        version: 4.23.15
+      typescript:
+        specifier: ~5.8.3
+        version: 5.8.3
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.7(@types/node@22.20.7)(tsx@4.23.15)
+
   client:
     dependencies:
       '@coral-xyz/anchor':

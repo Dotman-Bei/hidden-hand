@@ -1,0 +1,26 @@
+{
+  "name": "@hidden-hand/bots",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./policy": "./src/policy.ts",
+    "./sim": "./src/sim.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "verify": "tsc --noEmit -p tsconfig.json && vitest run",
+    "sim": "tsx scripts/sim-table.ts"
+  },
+  "dependencies": {
+    "@hidden-hand/client": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "tsx": "^4.20.3",
+    "typescript": "~5.8.3",
+    "vitest": "^3.2.4"
+  }
+}
