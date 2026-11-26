@@ -18,7 +18,9 @@ Guide seat: claude-sonnet-5-5 · standard · high. Started 2026-11-26 14:05 UTC 
 - Commit identity pinned LOCALLY to `140025488+Dotman-Bei@users.noreply.github.com`. The GLOBAL git email on this machine is the personal Gmail — any fresh clone (e.g. a no-space build clone) must set the noreply identity before the first commit.
 
 ## Tollgate
-- Report: not yet — Step 0a's Stage 0 creates `docs/tollgate/<date>-tollgate.md`.
+- Report: `docs/tollgate/2026-11-26-tollgate.md` (Step 0a Stage 0, committed 7a40d3f). Verdicts: **0a CLEAR · 0 CLEAR · 1 CLEAR · 2 BLOCKED if the build has a custom Solana program (C1 solana CLI, C2 cargo build-sbf, C3 anchor 0.30.1 vs pin 1.0.2, C4 no WSL distro; C7 yarn missing, degraded) · 2.5 CLEAR on hard rows (6 computer-use and 12 elevenlabs FAIL in the 0a session; re-decided by the 2.5 card) · 3 CLEAR pending its session card (rows 5, 7, 8 re-probed then)**.
+- Routing: top=opus→claude-opus-5-5, standard=sonnet→claude-sonnet-5-5, fast=haiku→claude-haiku-5-5; effort mechanism per-spawn; no defeating env knobs; executor variants NOT yet installed in the project repo (throwaway-tab prompt before Step 2).
+- Pins to plan against: Anchor 1.0.2, Agave/Solana 3.1.9, Rust 1.89.0 (SBF build uses Agave's platform-tools), Node 24.10.0 (22 likely fine), ephemeral-rollups-sdk 0.18.x (NOT 0.20.x, which is devnet-us only).
 - Guide pre-probe 2026-11-26 (informational, not the report): git OK · gh OK (Dotman-Bei) · node v22.23.4 · pnpm 10.33.0 · rustc/cargo 1.99.0 · anchor-cli **0.30.1** · ffmpeg 9.0.2 · 56.9 GB free · routing env knobs unset. **MISSING: `solana` CLI, `avm`, `yarn`; WSL has no distro installed.** npm probe errored on my side — re-probe.
 - **Stack risk (hard for Step 2 if the build has a custom program):** no Solana CLI / `cargo build-sbf` toolchain and Anchor older than MagicBlock's current SDK expects. Fix before Step 1 ends (see Open blockers).
 
@@ -50,7 +52,7 @@ Skills: Solidity/DeFi, TypeScript/React, Python/ML (no Rust listed — all Solan
 ## Step status
 | Step | Status | Artifact | Verified | Seat settings it ran at |
 |---|---|---|---|---|
-| 0a | pending | docs/resources/2026-11-26-solana-blitz-v10/ | — | — |
+| 0a | **done** | docs/resources/2026-11-26-solana-blitz-v10/ (commit 0d6210e) + tollgate 7a40d3f | 2026-11-26 guide: pushed, noreply identity, judging+eligibility quotes re-fetched live from /api/panels and match; INDEX gaps read; sponsors/magicblock.md has pins, devnet endpoints, ER/VRF/private-payments/cranks/session-keys code | claude-opus-5-5 (booted on sonnet, stopped, user ran /model opus); effort high per kickoff |
 | 0 | pending | docs/idea-forge/*-brief.md | — | — |
 | 1 | pending | spec + plans + manifest | — | — |
 | 3 pre | pending | docs/gates/*-gate-ledger.md | — | — |
@@ -59,10 +61,16 @@ Skills: Solidity/DeFi, TypeScript/React, Python/ML (no Rust listed — all Solan
 | 3 close | pending | ledger + submission | — | — |
 
 ## Next action
-User pastes the Step 0a kickoff (resource-extractor) in a fresh tab: `opus` · effort `high`, Chrome extension connected.
+User pastes the Step 0 kickoff (idea-forge) in a fresh tab: `opus` · effort `max`. In parallel the guide hands the toolchain-install block (WSL + Agave 3.1.9 + avm/Anchor 1.0.2) for a separate throwaway tab.
 
 ## Open blockers
-1. **Solana toolchain** (no `solana` CLI, Anchor 0.30.1, no WSL distro) — must be resolved before Step 2; guide will hand a fix block after Step 0a/0 once the pack says which Anchor/Solana versions the MagicBlock SDKs pin.
-2. **Portal form status** — confirm V10 submission opens client-side (Chrome) before relying on it.
-3. **Criteria unpublished** — confirm in the pack, from the portal/docs/Telegram.
+1. **Solana toolchain** (tollgate C1–C4): install WSL Ubuntu, then Rust 1.89.0, Agave 3.1.9, avm + Anchor 1.0.2 inside it. Start in parallel with Step 0; must be PASS before Step 2. A WSL install may need a reboot — do it between sessions.
+2. ~~Portal form status~~ RESOLVED by 0a: form is open for V10 (client-rendered, needs Telegram sign-in). Still open: confirm at Step 3 that a submission can be filed.
+3. Judging weights unpublished (only "creativity, technical depth, and how compellingly they showcase what's possible on Solana"); Wizardio's Choice criteria unpublished; demo video not explicitly mandated but "Pitch & Demo" URL is validated, so plan for one.
 4. Global git email is personal — never commit from a clone without the noreply identity.
+
+## Pack notes for later steps (guide)
+- Eligibility (verbatim): "Every submission must integrate MagicBlock's Ephemeral Rollup or VRF." Proof = delegations / VRF requests / private payments from the project's OWN program, wallet or fee vault on devnet or mainnet (ordinary transfers and swaps don't count; MagicBlock's shared programs are rejected as "your" address).
+- GitHub: public, or private with @jonasXchen invited. Form needs Telegram sign-in + wallet connect (prizes pay there) + X handle + team Telegram handles.
+- White space: dice, gachapon, RPS, binary prediction, sealed auction already ship as MagicBlock templates — a reskin of one is weak against the judging text.
+- The 0a session's INDEX timestamps ("14:20–15:05 UTC") disagree with the machine clock (commits 14:15Z); immaterial, the deadline facts come from the API. Real clock at this review: 14:20 UTC (15:20 WAT) — ~45 min AHEAD of the schedule above.
