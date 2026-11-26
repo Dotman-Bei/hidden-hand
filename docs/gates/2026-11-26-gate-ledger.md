@@ -56,7 +56,7 @@ Commands are verbatim from `docs/superpowers/plans/2026-11-26-gates.md` (PowerSh
   - **Evidence:** page said "Airdrop successful"; faucet balance 28,532.28 → 28,512.28. Read-only on-chain check (WSL): `solana balance BT9TYK3HL5Bc7rZfTNrPiGkjGXDKeDpdEPgWBqAks1Bs --url devnet` → **20 SOL**. `solana transaction-history` → 1 tx, `3XUB3EEgdA4z8Y8umv81nQF3B1xwt2WQ9GHR8w5LM8v91ACF7LxEcYxuG89rEj1nKSBGDMb8MCf5zAmvKGirZbuB`.
   - **Kit write-back:** `references/faucets/solana-devnet.md` committed locally in the kit (`21942e5`), not pushed.
   - **Agave drift seen:** at 20:12Z WSL reported `solana-cli 3.1.10` (it was 3.1.9 at 20:09Z; the parallel build session flipped it). Re-pinned with `agave-install init 3.1.9`; S2/S3/S7/S4 re-probed: 3.1.9 / 3.1.9 / 3.1.9 / anchor-cli 1.0.2.
-  - **Orchestrator:** run the gate once client:2 lands. Expected `BURNER-BALANCE: PASS` (20 SOL ≥ 5).
+  - **Gate run 20:15Z** (against client:2's script in the working tree, not yet committed): `BURNER BT9TYK3HL5Bc7rZfTNrPiGkjGXDKeDpdEPgWBqAks1Bs 20.000 SOL` / **`BURNER-BALANCE: PASS`**. **Status: done.** The orchestrator re-runs it after client:2 is committed.
 
 ### gates:13 — Spike deploy (first devnet deploy)
 - **Tier:** A (burner is payer and upgrade authority). **Pass:** early (Step 2, before the spike window closes 22:57:25Z).
