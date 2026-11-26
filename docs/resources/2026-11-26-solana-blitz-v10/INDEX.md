@@ -35,14 +35,18 @@ Extracted 2026-11-26, ~14:20–15:05 UTC, by the Step 0a resource-extractor (`cl
 | 10 | https://docs.magicblock.gg/pages/ephemeral-spl-token/api-reference/openapi/transfer.openapi.json | 2026-11-26 | curl | primary | High: transfer request schema incl. `platformFeeAccount` |
 | 11 | github.com/magicblock-labs/magicblock-engine-examples (tree, DEMOS.md, counter/anchor/Anchor.toml, gachapon-example/Anchor.toml + README) | 2026-11-26 | `gh api` | primary | High: pins `anchor_version = "1.0.2"`, gachapon devnet program |
 | 12 | Web search: BananaZone, Slimecoin, Jungle Fun, Blitz V9 winners | 2026-11-26 | WebSearch | secondary | Low/medium: see prior-art.md. BananaZone has no source beyond Luma |
+| 13 | https://build.magicblock.app/builders?view=winners → `/api/builders` (session-gated JSON, read in-page; only project fields kept, no personal data) | 2026-11-26 (follow-up) | Chrome (`navigate`, `javascript_tool`, `get_page_text`) | primary | High: all 40 Blitz winners V0–V9 with category, description, repo, demo. Descriptions truncated at 420 chars on capture. `revealedEvents` excludes V10 |
+| 14 | https://build.magicblock.app/champions | 2026-11-26 (follow-up) | Chrome | primary | High: resolves `CLAIM_QUALIFY_RATING = 7` (Champions program, not judging) |
+| 15 | https://build.magicblock.app/ideas | 2026-11-26 (follow-up) | Chrome | primary | High: 6 listed ideas, all with submissions; idea generator |
+| 16 | https://build.magicblock.app/ (home, full scroll) | 2026-11-26 (follow-up) | Chrome | primary | No new judging or video info beyond the Blitz panel (#2/#4) |
 
 ## Gaps (honest unknowns)
 
-1. **Judging weights:** none published anywhere reached. The meaning of the portal constants `CLAIM_QUALIFY_RATING = 7` and the daily leaderboard crawl is unknown.
-2. **Demo video:** "Pitch & Demo" is a validated URL field, but a *video* isn't explicitly mandated. The server schema isn't visible.
+1. **Judging weights:** none published anywhere, including a full pass of build.magicblock.app (home, builders, winners, ideas, champions). `CLAIM_QUALIFY_RATING = 7` is now **resolved** as the Champions program's rating, not judging. The meaning of the daily leaderboard crawl and of the winners' `votes` count is still unknown.
+2. **Demo video:** "Pitch & Demo" is a validated URL field, but a *video* isn't explicitly mandated. In practice, 34 of 40 past winners submitted a video or video-post link (YouTube, X, Loom, Tella, Descript, Drive). All 8 V8/V9 winners did. The 6 without one are the 4 V0 winners, plus V1's taskforest (empty field) and Blockrooms (a site link).
 3. **Wizardio's Choice criteria:** unpublished.
 4. **"Recent activity" window** for the on-chain check, and whether mainnet counts more than devnet: unknown.
-5. **Past winners' descriptions/tech** (V9 Battle Cities, Blackout, Noirwire, Nightfall; V8 Herd, Ultra Pong, Alerith, HoldOut): only names were captured. The builders page and per-project details weren't reached.
+5. ~~Past winners' descriptions~~ **Resolved:** all 40 Blitz winners V0–V9 are in prior-art.md. Remaining: V10 competitor submissions are hidden until revealed.
 6. **BananaZone:** no source beyond the Luma mention. Slimecoin and Jungle Fun rest on secondary sources only.
 7. **MagicBlock SDK details not extracted:** the Private-ER TS auth-token flow, the session-keys program ID, the Magic Router / `ephemeral-rollups-kit` TS API, and the roles of portal-listed `5inNvZ…`, `CrankS2…`, `vrfkfM4…`.
 8. **`/api/program-check` and `/api/repo-check`** were not exercised live.

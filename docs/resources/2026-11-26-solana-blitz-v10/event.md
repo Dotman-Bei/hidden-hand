@@ -37,8 +37,10 @@ Portal, `/api/panels` → `blitz.judging` (shown on the page as "SELECTION CRITE
 > "Projects are judged on creativity, technical depth, and how compellingly they showcase what's possible on Solana."
 
 - **No numeric weights are published** on Luma, the portal panel or the portal API. Treat the three criteria (creativity · technical depth · showcase of what's possible on Solana) as equal-weight and unconfirmed. **GAP.**
-- The portal bundle defines `CLAIM_QUALIFY_RATING = 7` and award states `["Accepted","Qualified","Disqualified"]` (for non-Blitz stages). The constant's meaning (maybe an internal 10-point review rating) is **not documented. Don't treat it as a rubric.**
+- **Resolved (2026-11-26, build.magicblock.app/champions):** `CLAIM_QUALIFY_RATING = 7` belongs to the monthly **Champions** rewards program, **not** hackathon judging. Verbatim: *"Each claim is rated 1-10, and a 7+ qualifies."* The award states `["Accepted","Qualified","Disqualified"]` belong to the non-Blitz stages (Forge / Founders Camp).
 - The portal bundle defines `LEADERBOARD_CRAWL_LABEL = "daily at 4 AM SGT"`, so on-chain activity is crawled into a leaderboard daily. Whether that feeds Blitz judging is **unconfirmed (GAP)**.
+- Past winners show a raw `votes` count on the winners view (V9: 8 votes each; V8: Herd 12, HoldOut 9, Ultra Pong 6, Alerith 4). The 4th-placed Wizardio pick (9) outvoted 2nd and 3rd, so votes don't map directly to placement. Who votes is **not stated (GAP)**.
+- **V10 submissions are hidden until revealed.** `/api/builders` → `revealedEvents` = `[1,2,3,4,5,6,7,8,10,11,13,15]`, which excludes 17.
 
 ## Prizes (verbatim)
 
