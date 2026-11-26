@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "randomness": [
+    {"bytes": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31], "cards": [1, 2, 3, 4, 5, 6, 7, 8], "hiddenSum": 36},
+    {"bytes": [255, 248, 241, 234, 227, 220, 213, 206, 199, 192, 185, 178, 171, 164, 157, 150, 143, 136, 129, 122, 115, 108, 101, 94, 87, 80, 73, 66, 59, 52, 45, 38], "cards": [1, 9, 2, 10, 3, 11, 4, 12], "hiddenSum": 52},
+    {"bytes": [14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14], "cards": [15, 15, 15, 15, 15, 15, 15, 15], "hiddenSum": 120},
+    {"bytes": [15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15], "cards": [1, 1, 1, 1, 1, 1, 1, 1], "hiddenSum": 8}
+  ],
+  "cases": [
+    {"name": "no-trades-tie-goes-to-seat-0", "hiddenSum": 64,
+     "trades": [],
+     "final": {"priceC": 6400, "cashC": [0, 0, 0, 0], "pos": [0, 0, 0, 0], "pnlC": [0, 0, 0, 0], "winner": 0}},
+    {"name": "buy-then-sell-round-trip", "hiddenSum": 70,
+     "trades": [{"seat": 0, "side": "buy", "qty": 3, "expect": "ok"}, {"seat": 0, "side": "sell", "qty": 3, "expect": "ok"}],
+     "final": {"priceC": 6400, "cashC": [0, 0, 0, 0], "pos": [0, 0, 0, 0], "pnlC": [0, 0, 0, 0], "winner": 0}},
+    {"name": "four-seats-informed", "hiddenSum": 79,
+     "trades": [{"seat": 0, "side": "buy", "qty": 5, "expect": "ok"}, {"seat": 1, "side": "buy", "qty": 2, "expect": "ok"}, {"seat": 2, "side": "sell", "qty": 1, "expect": "ok"}, {"seat": 0, "side": "buy", "qty": 4, "expect": "ok"}, {"seat": 3, "side": "buy", "qty": 3, "expect": "ok"}, {"seat": 1, "side": "sell", "qty": 2, "expect": "ok"}, {"seat": 2, "side": "buy", "qty": 1, "expect": "ok"}],
+     "final": {"priceC": 7600, "cashC": [-62050, 1200, -500, -22650], "pos": [9, 0, 0, 3], "pnlC": [9050, 1200, -500, 1050], "winner": 0}},
+    {"name": "lot-size-rejects", "hiddenSum": 64,
+     "trades": [{"seat": 0, "side": "buy", "qty": 0, "expect": "LotSize"}, {"seat": 0, "side": "buy", "qty": 6, "expect": "LotSize"}, {"seat": 1, "side": "sell", "qty": 0, "expect": "LotSize"}, {"seat": 1, "side": "sell", "qty": 6, "expect": "LotSize"}, {"seat": 2, "side": "buy", "qty": 5, "expect": "ok"}],
+     "final": {"priceC": 6900, "cashC": [0, 0, -33250, 0], "pos": [0, 0, 5, 0], "pnlC": [0, 0, -1250, 0], "winner": 0}},
+    {"name": "position-cap", "hiddenSum": 90,
+     "trades": [{"seat": 0, "side": "buy", "qty": 5, "expect": "ok"}, {"seat": 0, "side": "buy", "qty": 5, "expect": "ok"}, {"seat": 0, "side": "buy", "qty": 5, "expect": "ok"}, {"seat": 0, "side": "buy", "qty": 1, "expect": "PositionCap"}, {"seat": 0, "side": "sell", "qty": 5, "expect": "ok"}, {"seat": 1, "side": "sell", "qty": 5, "expect": "ok"}, {"seat": 1, "side": "sell", "qty": 5, "expect": "ok"}, {"seat": 1, "side": "sell", "qty": 5, "expect": "ok"}, {"seat": 1, "side": "sell", "qty": 1, "expect": "PositionCap"}],
+     "final": {"priceC": 5900, "cashC": [-69000, 99750, 0, 0], "pos": [10, -15, 0, 0], "pnlC": [21000, -35250, 0, 0], "winner": 0}},
+    {"name": "price-floor", "hiddenSum": 20,
+     "trades": [{"seat": 0, "side": "sell", "qty": 5, "expect": "ok"}, {"seat": 0, "side": "sell", "qty": 5, "expect": "ok"}, {"seat": 0, "side": "sell", "qty": 5, "expect": "ok"}, {"seat": 1, "side": "sell", "qty": 5, "expect": "ok"}, {"seat": 1, "side": "sell", "qty": 5, "expect": "ok"}, {"seat": 1, "side": "sell", "qty": 5, "expect": "ok"}, {"seat": 2, "side": "sell", "qty": 5, "expect": "ok"}, {"seat": 2, "side": "sell", "qty": 5, "expect": "ok"}, {"seat": 2, "side": "sell", "qty": 5, "expect": "ok"}, {"seat": 3, "side": "sell", "qty": 5, "expect": "ok"}, {"seat": 3, "side": "sell", "qty": 5, "expect": "ok"}, {"seat": 3, "side": "sell", "qty": 5, "expect": "PriceBound"}],
+     "final": {"priceC": 900, "cashC": [84750, 62250, 39750, 14000], "pos": [-15, -15, -15, -10], "pnlC": [54750, 32250, 9750, -6000], "winner": 0}},
+    {"name": "seller-wins-seat-2", "hiddenSum": 40,
+     "trades": [{"seat": 2, "side": "sell", "qty": 5, "expect": "ok"}, {"seat": 0, "side": "buy", "qty": 1, "expect": "ok"}, {"seat": 2, "side": "sell", "qty": 3, "expect": "ok"}, {"seat": 1, "side": "buy", "qty": 2, "expect": "ok"}, {"seat": 3, "side": "sell", "qty": 1, "expect": "ok"}],
+     "final": {"priceC": 5800, "cashC": [-5950, -11600, 48300, 5850], "pos": [1, 2, -8, -1], "pnlC": [-1950, -3600, 16300, 1850], "winner": 2}},
+    {"name": "price-ceiling", "hiddenSum": 110,
+     "trades": [{"seat": 0, "side": "buy", "qty": 5, "expect": "ok"}, {"seat": 0, "side": "buy", "qty": 5, "expect": "ok"}, {"seat": 0, "side": "buy", "qty": 5, "expect": "ok"}, {"seat": 1, "side": "buy", "qty": 5, "expect": "ok"}, {"seat": 1, "side": "buy", "qty": 5, "expect": "ok"}, {"seat": 1, "side": "buy", "qty": 5, "expect": "ok"}, {"seat": 2, "side": "buy", "qty": 5, "expect": "ok"}, {"seat": 2, "side": "buy", "qty": 5, "expect": "ok"}, {"seat": 2, "side": "buy", "qty": 5, "expect": "ok"}, {"seat": 3, "side": "buy", "qty": 5, "expect": "ok"}, {"seat": 3, "side": "buy", "qty": 5, "expect": "ok"}, {"seat": 3, "side": "buy", "qty": 5, "expect": "PriceBound"}],
+     "final": {"priceC": 11900, "cashC": [-107250, -129750, -152250, -114000], "pos": [15, 15, 15, 10], "pnlC": [57750, 35250, 12750, -4000], "winner": 0}}
+  ]
+}

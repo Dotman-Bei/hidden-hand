@@ -18,7 +18,10 @@ use ephemeral_rollups_sdk::vrf::instructions::{
     create_request_randomness_ix_const, RequestRandomnessParams,
 };
 use ephemeral_rollups_sdk::vrf::types::SerializableAccountMeta;
-use hidden_hand_engine::{cards_from_randomness, hidden_sum, CARD_COUNT, SEATS, START_PRICE_C};
+use hidden_hand_engine::{
+    cards_from_randomness, hidden_sum, pnl_c, quote, winner, Side, TradeError, CARD_COUNT, SEATS,
+    START_PRICE_C,
+};
 
 pub mod errors;
 pub mod state;
@@ -338,6 +341,43 @@ pub mod hidden_hand {
         Ok(())
     }
 
+    /// ER. Trade against the market maker. No wallet prompt: the seat's own key signs, zero fee on the ER.
+    pub fn trade(ctx: Context<Trade>, side: u8, qty: u8) -> Result<()> {
+        let trader = ctx.accounts.trader.key();
+        let now = Clock::get()?.unix_timestamp;
+        let table = &mut ctx.accounts.table;
+        require!(table.phase == Phase::Trading, HhError::WrongPhase);
+        require!(now < table.end_ts, HhError::RoundClosed);
+        let seat = table
+            .seats
+            .iter()
+            .position(|s| s.owner == trader)
+            .ok_or(HhError::NotSeated)?;
+        let side_e = Side::from_u8(side).ok_or(HhError::BadSide)?;
+        let fill = quote(table.price_c, table.seats[seat].pos, side_e, qty).map_err(|e| match e {
+            TradeError::LotSize => HhError::LotSize,
+            TradeError::PositionCap => HhError::PositionCap,
+            TradeError::PriceBound => HhError::PriceBound,
+        })?;
+        table.price_c = fill.price_after_c;
+        table.seats[seat].cash_c = table.seats[seat]
+            .cash_c
+            .checked_add(fill.cash_delta_c)
+            .ok_or(HhError::MathOverflow)?;
+        table.seats[seat].pos += fill.pos_delta;
+        let idx = (table.trade_count as usize) % TRADE_RING;
+        table.trades[idx] = TradeEntry {
+            seat: seat as u8,
+            side,
+            qty,
+            price_after_c: fill.price_after_c,
+            ts: now,
+        };
+        table.trade_count = table.trade_count.checked_add(1).ok_or(HhError::MathOverflow)?;
+        msg!("hh:trade seat={} side={} qty={} price={}", seat, side, qty, fill.price_after_c);
+        Ok(())
+    }
+
     // [hh:instructions:market]
     // [hh:instructions:settle]
     // [hh:instructions:commit-reveal]
@@ -516,6 +556,14 @@ pub struct RevealHands<'info> {
     /// CHECK: the magic program
     #[account(address = MAGIC_PROGRAM_ID)]
     pub magic_program: UncheckedAccount<'info>,
+}
+
+#[derive(Accounts)]
+pub struct Trade<'info> {
+    #[account(mut, seeds = [TABLE_SEED, &table.round_id.to_le_bytes()], bump)]
+    pub table: Box<Account<'info, Table>>,
+    #[account(mut)]
+    pub trader: Signer<'info>,
 }
 
 // [hh:accounts:market]

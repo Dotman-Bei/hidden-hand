@@ -962,6 +962,62 @@ export type HiddenHand = {
         }
       ],
       "args": []
+    },
+    {
+      "name": "trade",
+      "docs": [
+        "ER. Trade against the market maker. No wallet prompt: the seat's own key signs, zero fee on the ER."
+      ],
+      "discriminator": [
+        178,
+        144,
+        26,
+        216,
+        241,
+        187,
+        206,
+        130
+      ],
+      "accounts": [
+        {
+          "name": "table",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  97,
+                  98,
+                  108,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "table.round_id",
+                "account": "table"
+              }
+            ]
+          }
+        },
+        {
+          "name": "trader",
+          "writable": true,
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "side",
+          "type": "u8"
+        },
+        {
+          "name": "qty",
+          "type": "u8"
+        }
+      ]
     }
   ],
   "accounts": [
