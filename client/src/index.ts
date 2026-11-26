@@ -8,3 +8,5 @@ export * from "./round-base";
 export * from "./deal/index";
 export * from "./spike-report";
 export type { HiddenHand } from "./idl/hidden_hand";
+export * from "./engine";
+export * from "./round-play";
