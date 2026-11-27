@@ -428,7 +428,7 @@
       "commit": "feat(web): landing page with the illustrative pit hero (taste gate PASS)",
       "human_gate": false,
       "allow_empty": false,
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "web:9",
