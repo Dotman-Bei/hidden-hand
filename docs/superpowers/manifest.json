@@ -693,7 +693,7 @@
       "commit": "chore(gates): early full deploy and first real devnet round",
       "human_gate": true,
       "allow_empty": false,
-      "status": "pending",
+      "status": "done",
       "gate_profile": "deploy"
     },
     {
