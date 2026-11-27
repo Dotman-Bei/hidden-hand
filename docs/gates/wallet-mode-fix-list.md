@@ -34,4 +34,4 @@ Items found around gates:28/29. **Copy only, no logic.** The orchestrator dispat
 | FIX-3 landing/app pages | checked: no wallet named in web/index.html or web/app/index.html; discover.ts comment generalised |
 | FIX-4 manual test doc | done (title, note line, step 1, result block) |
 | FIX-5 Express hero lead | done: lead swaps by mode (inline script, same pattern as the page head); wallet lead shortened to keep hero-maxchars at 390 |
-| Taste gate re-run (`/app/`, `/`) | open |
+| Taste gate re-run (`/app/`, `/`) | PASS 10:32Z on cd476d5+: both pages `GATE: PASS`; section 5 checked on 390 px shots (wallet + Express); also On-chain record clipping fixed (cd476d5) |
