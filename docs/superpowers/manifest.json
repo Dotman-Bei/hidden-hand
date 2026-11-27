@@ -1231,8 +1231,8 @@
         "README.md, web/index.html and docs/gates/submission-draft.md describe wallet mode (real wallet, one popup per trade, sealed hands on the Private ER, bots in the other seats) and Express mode honestly"
       ],
       "gate": {
-        "run": "$u = (Select-String -Path docs/gates/2026-11-26-gate-ledger.md -Pattern 'WALLET-PREVIEW: (https://\\S+\\.vercel\\.app)' | Select-Object -Last 1).Matches[0].Groups[1].Value; $code = curl.exe -s -o NUL -w \"%{http_code}\" \"$u/app/\"; if ($u -and ($code -eq '200' -or $code -eq '401')) { 'PREVIEW: PASS' } else { \"PREVIEW: FAIL ($code)\" }",
-        "expect": "PASS: `PREVIEW: PASS` (401 = Vercel's preview protection; the user opens it logged in)."
+        "run": "$u = (Select-String -Path docs/gates/2026-11-26-gate-ledger.md -Pattern 'WALLET-PREVIEW: (https://\\S+\\.vercel\\.app)' | Select-Object -Last 1).Matches[0].Groups[1].Value; $r = (curl.exe -s -o NUL -w \"%{http_code} %{redirect_url}\" \"$u/app/\") -split ' ', 2; if ($u -and ($r[0] -eq '200' -or $r[0] -eq '401' -or ($r[0] -eq '302' -and $r[1] -match '^https://vercel\\.com/sso-api'))) { 'PREVIEW: PASS' } else { \"PREVIEW: FAIL ($($r -join ' '))\" }",
+        "expect": "PASS: `PREVIEW: PASS` (401, or a 302 whose Location is https://vercel.com/sso-api…, = Vercel's preview deployment protection for logged-out visitors; the user opens it logged in)."
       },
       "commit": "chore(gates): wallet-mode Vercel preview",
       "human_gate": true,

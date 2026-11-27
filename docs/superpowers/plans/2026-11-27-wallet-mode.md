@@ -1691,8 +1691,8 @@ Run by the gate-concierge on the user's consent. **Preview only: never `--prod`,
       Run (from `web/dist`): `npx --yes vercel@67.0.0 deploy --yes`
       Expected: a `https://hidden-hand-…-heisbei-s-projects.vercel.app` URL. Append the line `WALLET-PREVIEW: <url>` (with the time, UTC) to `docs/gates/2026-11-26-gate-ledger.md`, and give the URL to the user for Task 29.
 - [ ] **Step 4: Run to confirm it passes (THE GATE)**
-      Run: `$u = (Select-String -Path docs/gates/2026-11-26-gate-ledger.md -Pattern 'WALLET-PREVIEW: (https://\S+\.vercel\.app)' | Select-Object -Last 1).Matches[0].Groups[1].Value; $code = curl.exe -s -o NUL -w "%{http_code}" "$u/app/"; if ($u -and ($code -eq '200' -or $code -eq '401')) { 'PREVIEW: PASS' } else { "PREVIEW: FAIL ($code)" }`
-      Expected: PASS: `PREVIEW: PASS` (401 = Vercel's preview protection; the user opens it logged in).
+      Run: `$u = (Select-String -Path docs/gates/2026-11-26-gate-ledger.md -Pattern 'WALLET-PREVIEW: (https://\S+\.vercel\.app)' | Select-Object -Last 1).Matches[0].Groups[1].Value; $r = (curl.exe -s -o NUL -w "%{http_code} %{redirect_url}" "$u/app/") -split ' ', 2; if ($u -and ($r[0] -eq '200' -or $r[0] -eq '401' -or ($r[0] -eq '302' -and $r[1] -match '^https://vercel\.com/sso-api'))) { 'PREVIEW: PASS' } else { "PREVIEW: FAIL ($($r -join ' '))" }`
+      Expected: PASS: `PREVIEW: PASS` (401, or a 302 whose Location is https://vercel.com/sso-api…, = Vercel's preview deployment protection for logged-out visitors; the user opens it logged in).
 - [ ] **Step 5: Commit (kernel-performed — no agent runs this)**
       Message: `chore(gates): wallet-mode Vercel preview`
 
