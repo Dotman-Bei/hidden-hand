@@ -18,7 +18,7 @@
 ## 1 — Story & time budget
 
 Prove: in a real devnet round, four sealed hands are dealt inside MagicBlock's Private Ephemeral Rollup, trading moves a public price, and at the bell the hands flip, the hidden sum draws across the chart and the winner's pot is claimed on Solana.
-Money shot: scene S5 (starts at about 1:13 of screen time).
+Money shot: scene S5 (starts at 1:09 of screen time in the cut).
 
 Criteria quoted from `event.md`: "Projects are judged on creativity, technical depth, and how compellingly they showcase what's possible on Solana." No weights are published; the pack treats the three as equal and unconfirmed. Seconds include the 3 s title card and the 6 s outro.
 
@@ -44,14 +44,14 @@ Criteria quoted from `event.md`: "Projects are judged on creativity, technical d
 
 | id | seconds | visual (route/action/window) | narration cue | driver | wallet verbs | gate assertion | retakes | take |
 |---|---|---|---|---|---|---|---|---|
-| S1 | 9 | `/` landing: the centred hero with the pit running, its "Illustrative round" label in frame | S1 "Hidden Hand: four…" | screencast | — | "Illustrative round" text visible; chart line has moved | 3 | |
-| S2 | 14 | `/app/` idle, then `/app/?round=<id>` from the runner: seats fill, the browser presses "Take the free seat" | S2 "Now a live…" | screencast | — | seat 4 reads "Seat 4 · you"; 4 of 4 seats taken or dealing starts | 3 | |
-| S3 | 15 | `/app/` deal: "Dealing sealed hands with VRF…", then own two cards face up and the hint; other three seats face down. Lower-third quotes the `(a) PASS` line of `docs/spike/spike-result.md` | S3 "MagicBlock VRF deals…" | screencast | — | own hint "Your hand is worth …" visible; three other seats show card backs | 3 | |
-| S4 | 32 | `/app/` pit: the full 75 s round shown sped up (about 2–3×, the factor labelled on screen). The browser presses Buy / Sell toward its hand hint; chart and tape fill; only this seat’s own tape rows are Rollup transaction links (bot rows are plain text) | S4 "The contract pays…" | screencast | — | at least 3 trades from seat 4 on the tape as links; price chart moved from 64.00 | 3 | |
-| S5 | 20 | `/app/` bell: "Bell. Trading is closed." → hands flip → dotted hidden-sum line on the chart → settled panel (hidden sum, close, gap, winner, pot) | S5 "The bell. Every…" | screencast | — | all four seats face up, reveal line drawn, phase "Settled", panel values readable | 3 | |
-| S6 | 12 | `/app/` on-chain record section (base-layer transaction list), then the round's `claim_pot` transaction on Solana Explorer (devnet) | S6 "The table commits…" | screencast | — | explorer page shows Success and the program's ClaimPot instruction | 3 | |
-| S7 | 9 | Solana Explorer (custom RPC = the Private ER): one of this seat's tape links, a `Trade` instruction with its fee. The Explorer first asks “Connect to an unknown RPC server?” for `devnet-tee.magicblock.app`; the capture browser presses Connect only if the user allows it | S7 "Here is one…" | screencast | — | page shows Success, the Trade log and a zero fee. If Connect is not allowed or the explorer cannot render it, placeholder card with the signature | 3 | |
-| S8 | 15 | Solana Explorer (devnet): this round's base-layer `delegate_pda` transaction of the table, then the program address `HZdoTuj1…miRFb` | S8 "And this is…" | screencast | — | Success, the program's DelegatePda instruction, program id legible | 3 | |
+| S1 | 9 | `/` landing: the centred hero with the pit running, its "Illustrative round" label in frame | S1 "Hidden Hand: four…" | screencast | — | "Illustrative round" text visible; chart line has moved | 3 | 1 |
+| S2 | 14 | `/app/` idle, then `/app/?round=<id>` from the runner: seats fill, the browser presses "Take the free seat" | S2 "Now a live…" | screencast | — | seat 4 reads "Seat 4 · you"; 4 of 4 seats taken or dealing starts | 3 | 1 |
+| S3 | 15 | `/app/` deal: "Dealing sealed hands with VRF…", then own two cards face up and the hint; other three seats face down. Lower-third quotes the `(a) PASS` line of `docs/spike/spike-result.md` | S3 "MagicBlock VRF deals…" | screencast | — | own hint "Your hand is worth …" visible; three other seats show card backs | 3 | 1 |
+| S4 | 32 | `/app/` pit: the full 75 s round shown sped up (about 2–3×, the factor labelled on screen). The browser presses Buy / Sell toward its hand hint; chart and tape fill; only this seat’s own tape rows are Rollup transaction links (bot rows are plain text) | S4 "The contract pays…" | screencast | — | at least 3 trades from seat 4 on the tape as links; price chart moved from 64.00 | 3 | 1 |
+| S5 | 20 | `/app/` bell: "Bell. Trading is closed." → hands flip → dotted hidden-sum line on the chart → settled panel (hidden sum, close, gap, winner, pot) | S5 "The bell. Every…" | screencast | — | all four seats face up, reveal line drawn, phase "Settled", panel values readable | 3 | 1 |
+| S6 | 12 | `/app/` on-chain record section (base-layer transaction list), then the round's `claim_pot` transaction on Solana Explorer (devnet) | S6 "The table commits…" | screencast | — | explorer page shows Success and the program's ClaimPot instruction | 3 | 1 |
+| S7 | 9 | Solana Explorer (custom RPC = the Private ER): one of this seat's tape links, a `Trade` instruction with its fee. The Explorer first asks “Connect to an unknown RPC server?” for `devnet-tee.magicblock.app`; the capture browser presses Connect only if the user allows it | S7 "Here is one…" | screencast | — | page shows Success, the Trade log and a zero fee. If Connect is not allowed or the explorer cannot render it, placeholder card with the signature | 3 | 1 |
+| S8 | 15 | Solana Explorer (devnet): this round's base-layer `delegate_pda` transaction of the table, then the program address `HZdoTuj1…miRFb` | S8 "And this is…" | screencast | — | Success, the program's DelegatePda instruction, program id legible | 3 | 1 |
 
 ## 4 — Narration script
 
@@ -93,14 +93,21 @@ Upload hold: the repo is private. No upload until the user confirms it is public
 
 | check | scene(s) | pass/fail | note |
 |---|---|---|---|
-| money shot visible | | | |
-| text legible at 1080p | | | |
-| captions present + synced | | | |
-| no capture yellow border | | | |
-| no secret / no address that shouldn't be on screen | | | |
-| per-scene duration within budget | | | |
-| total duration within ±10% | | | |
-| audio present, loudness sane | | | |
+| money shot visible | S5 | pass | render 1. Bell at about 1:10, hands face up and the hidden-sum line at about 1:12, settled panel: sum 85, close 84.00, gap 1.00 |
+| text legible at 1080p | all | fail | render 1: full-range captures were read as limited range (background crushed to black); explorer labels covered field names; a cut-off chip showed on the program page |
+| captions present + synced | S1–S8 | pass | render 1, frames read; captions come from the TTS word times |
+| no capture yellow border | all | pass | page screencast only |
+| no secret / no address that shouldn't be on screen | all | pass | public devnet addresses and signatures only; the Explorer header shows the bare Private ER host; capture aborts on `token=` in page text or tape links |
+| per-scene duration within budget | S1–S8 | pass | actual 10.4 / 13.6 / 13.7 / 28.7 / 18.0 / 10.6 / 8.4 / 13.7 s, audio-first |
+| total duration within ±10% | all | pass | 126.1 s against 135 s (−6.6 %) |
+| audio present, loudness sane | all | pass | −14.12 LUFS integrated, −1.35 dBTP |
+| text legible at 1080p | all | pass | render 2: bt709 limited range, labels moved, crop adjusted; 63-frame sweep and full-size frames read |
+| money shot visible | S5 | pass | render 2, re-read |
+| captions present + synced | S1–S8 | pass | render 2: first speech in each scene starts within 0.15 s of its first caption |
+| no secret / no address that shouldn't be on screen | all | pass | render 2: one frame every 2 s read, none carries a token; no `token=` in the take logs or the render manifest |
+| audio present, loudness sane | all | pass | render 2: −14.12 LUFS, −1.35 dBTP; not listened to by ear (the seat cannot hear audio) |
+| total duration within ±10% | all | pass | render 2: 126.1 s |
+| money shot visible | outro | pass | outro QR: 841 of 841 modules match the repo URL; logged-out GET returns 404 while the repo is private (upload hold stands) |
 
 ## 7 — Publish block
 
@@ -123,3 +130,6 @@ Upload hold: the repo is private. No upload until the user confirms it is public
 | 2026-11-27 | approved (script, storyboard, recording session and the Explorer Connect press), with three conditions: script-driven seat said aloud in S2 and S4; no Private ER token in any frame or file; no upload until the repo is public and the QR resolves | the user |
 | 2026-11-27 | superseded-edit (S2 and S4 narration per the approval conditions; S2 14 s, S4 32 s; token rule and upload hold added to §5) | demo-studio |
 | 2026-11-27 | pre-flight verified | demo-studio |
+| 2026-11-27 | recorded (8/8 scenes) | demo-studio |
+| 2026-11-27 | assembled | demo-studio |
+| 2026-11-27 | QC passed [residuals: narration pronunciation not checked by ear; the S1 landing text says 90-second while the recorded demo-mode round is 75 s; the S3 quote shows the spike run's cards, not this round's; the S7 close-up shows the Trade log without the program id; true peak −1.35 dBTP against a −1.5 target; the outro repo link is 404 logged-out until gates:18] | demo-studio |

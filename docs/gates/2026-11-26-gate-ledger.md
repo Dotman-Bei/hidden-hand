@@ -7,6 +7,7 @@ One ledger per campaign: later passes extend this file and never fork it. It rec
 | Pass | Started (UTC) | Seat model | Card |
 |---|---|---|---|
 | preflight | 2026-11-26T20:06Z | `claude-opus-5-5` (top tier; effort high) | Row 5 (claude-in-chrome) **PASS**: `tabs_context_mcp` returned a tab group, `navigate` and `get_page_text` worked. Row 15 (env store) **PASS**: `setx TOLLGATE_PROBE` → `reg query` showed REG_SZ 1 → `reg delete` succeeded. Rows 6, 7 and 8 are not granted (computer-use, inbox and wallet extension are struck). |
+| demo-studio (Step 2.5) | 2026-11-27T06:56Z | `claude-sonnet-5-5` (standard tier; effort high per the kickoff) | Browser-only path (computer-use not granted). Card in `docs/tollgate/2026-11-26-tollgate.md` §6: CLEAR. |
 
 Repo state at preflight: `origin/main` = `9876dc4` (spike clock `Build started: 2026-11-26T19:57:25Z`, so the amended T+3 h spike deadline is **22:57:25Z**). program:1 is not committed yet: `.gitignore` is untracked in the orchestrator's working tree. It already ignores `.env` (`git check-ignore -q .env` → True), and `.env` does not exist. WSL `solana --version` = `solana-cli 3.1.9` (no drift). The fixed program keypair is **present** at `/root/.config/hidden-hand/program-keypair.json` (existence checked with `test -f` only; never read).
 
@@ -207,3 +208,7 @@ Every OAuth, CAPTCHA, faucet request and on-chain action is logged here.
 | 2026-11-27T02:33Z | gates:14 | **Diagnostic #2** (one attempt) | (a) FAIL (client decode name), (b)(c)(f) PASS; owner reads plaintext dealt hand, stranger null |
 | 2026-11-27T02:50Z | gates:15 | **Real devnet round, retry** (TEE mode, `--demo --proof`): base open/join/delegate, ER deal/trades/reveal/settle, validator commit+undelegate, claim | `DEMO-ROUND: DONE hidden sum 65`; `PROOF: PASS`; winner seat 2, pot 0.040 SOL |
 | 2026-11-27T02:53Z | gates:14 | **Spike run 5** | (a)(b)(c)(f) PASS; TEE path eligible: yes; burner 16.642 SOL |
+| 2026-11-27T07:06Z | demo (2.5) | **Devnet round**, dry run before script approval, no video (`demo-round --demo --seat4 <browser seat>`, no `--proof`): the hidden browser seat traded | table `3ftesee54wbmTazQvMV4Vq6JkXo2f9Z3BNwzU6jA5qeS`; claim `41CDXMZF…tY9qw1`; sum 45, close 46.00 |
+| 2026-11-27T07:18Z | demo (2.5) | **Devnet round, recorded** (take 1, same command, no `--proof`), after the user's recording consent | table `CqPKhLT3zscy7186HCCFFr3QsfQHyKYH3RRD8FoTbYPs`; delegation `3TWHZdKi1n7Pb9GAosVJ4jSv1Ht3v91LjAAfCmDzkYmmd8HqDxrH1dzUcgDjeYZHMzVCEq6dP4TKY9AzjQ5B57xx`; claim `4QGkbvtc6pnG47xFsTnsrTB7g7hxPYU4chaZRxUWAFbWFQMSNDw97WtnExE6Z6mfR542MEoNGTnGnnWLUftQAmvY`; sum 85, close 84.00; burner 16.481 SOL after |
+| 2026-11-27T07:22Z | demo (2.5) | **Explorer consent prompt**: pressed Connect for the custom RPC `devnet-tee.magicblock.app` in a throwaway capture browser (no wallet, no logins), on the user's yes | no token in the link, the header or any file |
+| 2026-11-27T07:41Z | demo (2.5) | Final cut rendered and QC'd locally; **nothing uploaded**. Upload waits for the user's watch, their consent and a public repo (gates:18) | file kept outside the repo |
