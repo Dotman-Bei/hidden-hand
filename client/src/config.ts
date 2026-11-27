@@ -2,7 +2,7 @@ import { PublicKey } from "@solana/web3.js";
 import idl from "./idl/hidden_hand.json";
 
 export type DealMode = "tee" | "commit-reveal";
-export const DEFAULT_DEAL_MODE: DealMode = "tee";
+export const DEFAULT_DEAL_MODE: DealMode = "commit-reveal";
 
 export const PROGRAM_ID = new PublicKey(idl.address);
 export const BASE_RPC = "https://api.devnet.solana.com";

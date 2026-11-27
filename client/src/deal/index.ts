@@ -1,4 +1,5 @@
 import type { DealMode } from "../config";
+import { CrDealAdapter } from "./commit-reveal";
 import { TeeDealAdapter } from "./tee";
 import type { DealAdapter, SecretStore } from "./types";
 
@@ -8,11 +9,11 @@ export function memorySecretStore(): SecretStore {
 }
 
 export function createDealAdapter(mode: DealMode, store: SecretStore): DealAdapter {
-  void store;
   if (mode === "tee") return new TeeDealAdapter();
-  throw new Error(`deal mode "${mode}" is not built on this path (the fallback task client:21 adds commit-reveal)`);
+  return new CrDealAdapter(store);
 }
 
 export { TeeDealAdapter };
 export { isReadable, pollReadable, waitUntilReadable } from "./readable";
 export type { DealAdapter, DealContext, SecretStore } from "./types";
+export { CrDealAdapter, cardsForSeat, commitmentOf } from "./commit-reveal";
