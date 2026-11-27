@@ -5,7 +5,7 @@ A 90-second on-chain trading pit where four sealed hands set the price of their 
 
 ## Demo
 
-TBD-post-build:demo-video-url
+https://youtu.be/bl4FznfYQj0
 
 Live site: [hiddenhand.suitz.xyz](https://hiddenhand.suitz.xyz) (the pit: [/app/](https://hiddenhand.suitz.xyz/app/); rounds run on Solana devnet)
 
