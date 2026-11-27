@@ -23,6 +23,7 @@ import {
   formatCuLines,
   formatSpikeResult,
   formatVersionLine,
+  handDataLines,
 } from "../src/spike-report";
 
 const SPIKE_DURATION_SECS = 30;
@@ -100,6 +101,24 @@ async function probe(r: Reader, account: PublicKey, commitment: Commitment, asHa
   return describeAccountRead(info, dealt);
 }
 
+/** The full Hand data one reader gets (hex, every byte) and the exact error our Hand decoder throws on it, if any. */
+async function handDump(r: Reader, hand: PublicKey): Promise<string[]> {
+  let info: AccountInfo<Buffer> | null;
+  try {
+    info = await r.conn.getAccountInfo(hand, "confirmed");
+  } catch (e) {
+    return handDataLines(r.name, asError(e), null);
+  }
+  if (info === null) return handDataLines(r.name, null, null);
+  let decodeError: unknown = null;
+  try {
+    makeProgram(r.conn, r.kp).coder.accounts.decode<{ dealt: boolean }>("Hand", info.data);
+  } catch (e) {
+    decodeError = e;
+  }
+  return handDataLines(r.name, info, decodeError);
+}
+
 /** Before request_deal: can the owner / a stranger read the (undealt) hand right after the permissions were created? */
 async function preDealDiagnostics(owner: Keypair, stranger: Keypair, table: PublicKey): Promise<string[]> {
   const hand = handPda(table, owner.publicKey);
@@ -169,6 +188,7 @@ async function aDiagnostics(burner: Keypair, owner: Keypair, stranger: Keypair, 
     d.push(`- payer read (confirmed, non-member): ${await probe(p, hand, "confirmed", true)}`);
     const anon: Reader = { name: "no-token", kp: stranger, conn: publicErConnection(TEE_RPC), expiresAt: 0 };
     d.push(`- no-token read (confirmed): ${await probe(anon, hand, "confirmed", true)}`);
+    for (const r of [o, s]) d.push(...(await handDump(r, hand)));
   } catch (e) {
     d.push(`- diagnostics failed: ${errText(e)}`);
   }

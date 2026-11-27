@@ -46,6 +46,24 @@ export function describeAccountRead(read: AccountLike | null | Error, dealt: boo
   return `lamports=${read.lamports} owner=${read.owner.toBase58()} len=${read.data.length} head=${hexHead(read.data)}${d}`;
 }
 
+/** Every byte of `data` as lowercase hex (devnet test-account data only — never keys or tokens). */
+export function hexAll(data: Uint8Array): string {
+  return hexHead(data, data.length);
+}
+
+/**
+ * The full Hand data of one reader's read, then what our decoder said about it:
+ * `- <who> hand full data (len=N): <hex>` + `- <who> hand decode error: <exact message>` | `- <who> hand decode: ok`;
+ * or `- <who> hand full data: null` | `- <who> hand full data: error: <msg>`.
+ */
+export function handDataLines(who: string, read: AccountLike | null | Error, decodeError: unknown): string[] {
+  if (read === null || read instanceof Error) return [`- ${who} hand full data: ${describeAccountRead(read)}`];
+  const head = `- ${who} hand full data (len=${read.data.length}): ${hexAll(read.data)}`;
+  if (decodeError === null || decodeError === undefined) return [head, `- ${who} hand decode: ok`];
+  const text = decodeError instanceof Error ? decodeError.message : String(decodeError);
+  return [head, `- ${who} hand decode error: ${text.replace(/\s+/g, " ").trim()}`];
+}
+
 export interface ReadAttempt { atMs: number; result: string }
 
 /** Runs of identical consecutive results collapse to one line: `- <label> #i-j (t+a..b ms) xN: <result>`. */

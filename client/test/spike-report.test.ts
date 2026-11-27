@@ -7,6 +7,8 @@ import {
   formatCuLines,
   formatSpikeResult,
   formatVersionLine,
+  handDataLines,
+  hexAll,
   memberFlagNames,
   programInvocations,
 } from "../src/spike-report";
@@ -91,6 +93,25 @@ describe("(a) diagnostics", () => {
     expect(findPermissionMember(new Uint8Array(40), member)).toBe("member not found (len 40, bytes 34..39=0000000000)");
     expect(memberFlagNames(0)).toBe("none");
     expect(memberFlagNames(0x1e)).toBe("TX_LOGS|TX_BALANCES|TX_MESSAGE|ACCOUNT_SIGNATURES");
+  });
+
+  it("dumps the full hand data as hex and the exact decoder error text", () => {
+    const data = Uint8Array.from({ length: 76 }, (_, i) => i);
+    const hex = hexAll(data);
+    expect(hex).toHaveLength(152);
+    expect(hex.startsWith("000102")).toBe(true);
+    expect(hex.endsWith("4a4b")).toBe(true);
+    expect(handDataLines("owner", { lamports: 7, owner, data }, new Error("Invalid bool: 2"))).toEqual([
+      `- owner hand full data (len=76): ${hex}`,
+      "- owner hand decode error: Invalid bool: 2",
+    ]);
+    expect(handDataLines("owner", { lamports: 7, owner, data }, null)).toEqual([`- owner hand full data (len=76): ${hex}`, "- owner hand decode: ok"]);
+    expect(handDataLines("stranger", null, null)).toEqual(["- stranger hand full data: null"]);
+    expect(handDataLines("stranger", new Error("401\nUnauthorized"), null)).toEqual(["- stranger hand full data: error: 401 Unauthorized"]);
+    expect(handDataLines("owner", { lamports: 1, owner, data: new Uint8Array(1) }, "not an Error")).toEqual([
+      "- owner hand full data (len=1): 00",
+      "- owner hand decode error: not an Error",
+    ]);
   });
 });
 
