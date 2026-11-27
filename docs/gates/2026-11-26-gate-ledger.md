@@ -8,6 +8,7 @@ One ledger per campaign: later passes extend this file and never fork it. It rec
 |---|---|---|---|
 | preflight | 2026-11-26T20:06Z | `claude-opus-5-5` (top tier; effort high) | Row 5 (claude-in-chrome) **PASS**: `tabs_context_mcp` returned a tab group, `navigate` and `get_page_text` worked. Row 15 (env store) **PASS**: `setx TOLLGATE_PROBE` → `reg query` showed REG_SZ 1 → `reg delete` succeeded. Rows 6, 7 and 8 are not granted (computer-use, inbox and wallet extension are struck). |
 | demo-studio (Step 2.5) | 2026-11-27T06:56Z | `claude-sonnet-5-5` (standard tier; effort high per the kickoff) | Browser-only path (computer-use not granted). Card in `docs/tollgate/2026-11-26-tollgate.md` §6: CLEAR. |
+| closing | 2026-11-27T07:52Z | `claude-opus-5-5` (top tier; effort high) | Row 5 (claude-in-chrome) **PASS**: `tabs_context_mcp` returned a tab group. Row 15 (env store) **PASS**: `setx` → `reg query` → `reg delete`. WSL `solana-cli 3.1.9` (no drift; no bare `anchor` run). Consent in the kickoff: gates:17, WEB DEPLOY (hiddenhand.suitz.xyz), gates:18. gates:19 **not** consented. |
 
 Repo state at preflight: `origin/main` = `9876dc4` (spike clock `Build started: 2026-11-26T19:57:25Z`, so the amended T+3 h spike deadline is **22:57:25Z**). program:1 is not committed yet: `.gitignore` is untracked in the orchestrator's working tree. It already ignores `.env` (`git check-ignore -q .env` → True), and `.env` does not exist. WSL `solana --version` = `solana-cli 3.1.9` (no drift). The fixed program keypair is **present** at `/root/.config/hidden-hand/program-keypair.json` (existence checked with `test -f` only; never read).
 
@@ -145,13 +146,18 @@ Commands are verbatim from `docs/superpowers/plans/2026-11-26-gates.md` (PowerSh
 - **Tier:** A. **Pass:** closing.
 - **Waits on:** gates:15, web:9, docs:10, program:1.
 - **Tools:** `wsl -d Ubuntu-24.04 -u root --exec bash -l program/scripts/wsl-deploy.sh deploy`; gate `wsl -d Ubuntu-24.04 -u root --exec bash -l program/scripts/wsl-deploy.sh check` → `HH-DEPLOY: PASS`.
-- **Status:** pending.
+- **Status:** **done (verify-only, recorded by the orchestrator/guide 2026-11-27 ~04:55Z):** the deployed program is byte-identical to HEAD, so no redeploy was needed. Live build = the gates:15 upgrade (slot 526718687). The closing pass did not redeploy.
 
 ### gates:17 — Closing devnet round + submission proof
 - **Tier:** A. **Pass:** closing.
 - **Waits on:** gates:16, bots:7.
 - **Tools:** `pnpm --filter @hidden-hand/bots demo-round -- --demo --proof`; gate `pnpm --filter @hidden-hand/bots check-proof` → `PROOF: PASS`. The last line of `docs/proof/devnet-round.md` is the form's explorer link.
-- **Status:** pending.
+- **Status:** **done 2026-11-27T07:56:36Z → 07:58:30Z, on your consent (closing kickoff), HEAD `8ea0863`, no redeploy (slot 526718687), TEE default mode. Gate `PROOF: PASS`.** Pull `--no-autostash` clean; WSL `solana-cli 3.1.9`; burner 16.481 SOL before.
+  - Runner: `table FuDyDa6DqtdZoxfBHecVCWPPqxzjH465mCifPg5higsD open` (round 1795766197955) → `dealt; trading until 07:58:21Z` → `bell` → `hidden sum 34, close 33.00, winner seat 0` → `wrote docs/proof/devnet-round.md` → **`DEMO-ROUND: DONE hidden sum 34, close 33.00`**. No `token=` in the output (scanned).
+  - Proof `docs/proof/devnet-round.md` was **overwritten as intended** (deal mode tee; ER devnet-tee, validator `MTEWGu…`) and left uncommitted for the orchestrator. Base layer: open_table `3Xq8dz35…`, join_table ×4, **delegate_pda table `2qB2YVU4…`** + hands ×4, **commit/undelegate (validator) `JuLfuPw7…`**, **claim_pot `4CgZLMsg…`**. ER: permissions, request_deal (VRF), 23 trades, reveal, settle_round.
+  - Concierge `solana confirm` (read-only): delegation, commit/undelegate and claim all **Finalized**. The table account's owner is `HZdoTuj1…` again on the base layer (undelegated). Burner after: **16.441 SOL**.
+  - Result: cards 3,5,6,7,4,2,1,6; hidden sum 34; close 33.00 (|close − sum| = 1.00); winner seat 0 (`6K7EC5SzgnbTomshUoPWKSTnuktVxJgWZgHiRArZkxnb`), pot 0.040 SOL.
+  - **Form explorer link (base-layer delegation):** https://explorer.solana.com/tx/2qB2YVU4HuebT9voJH3P6zjxaCqSmdqfE8DGtXbQUX8n68MPdD2M1dH5suHx9VW5tuCGzz5yWjjrL9qvgHNpVhoA?cluster=devnet (this replaces the gates:15 link).
 
 ### gates:18 — Repo access for the judges
 - **Tier:** A (`gh`, after `gh auth status` re-confirms Dotman-Bei). **Pass:** closing.
@@ -212,3 +218,4 @@ Every OAuth, CAPTCHA, faucet request and on-chain action is logged here.
 | 2026-11-27T07:18Z | demo (2.5) | **Devnet round, recorded** (take 1, same command, no `--proof`), after the user's recording consent | table `CqPKhLT3zscy7186HCCFFr3QsfQHyKYH3RRD8FoTbYPs`; delegation `3TWHZdKi1n7Pb9GAosVJ4jSv1Ht3v91LjAAfCmDzkYmmd8HqDxrH1dzUcgDjeYZHMzVCEq6dP4TKY9AzjQ5B57xx`; claim `4QGkbvtc6pnG47xFsTnsrTB7g7hxPYU4chaZRxUWAFbWFQMSNDw97WtnExE6Z6mfR542MEoNGTnGnnWLUftQAmvY`; sum 85, close 84.00; burner 16.481 SOL after |
 | 2026-11-27T07:22Z | demo (2.5) | **Explorer consent prompt**: pressed Connect for the custom RPC `devnet-tee.magicblock.app` in a throwaway capture browser (no wallet, no logins), on the user's yes | no token in the link, the header or any file |
 | 2026-11-27T07:41Z | demo (2.5) | Final cut rendered and QC'd locally; **nothing uploaded**. Upload waits for the user's watch, their consent and a public repo (gates:18) | file kept outside the repo |
+| 2026-11-27T07:57Z | gates:17 | **Closing devnet round** (`demo-round --demo --proof`, TEE): base open/join/delegate, ER permissions/VRF deal/23 trades/reveal/settle, validator commit+undelegate, claim | `DEMO-ROUND: DONE hidden sum 34, close 33.00`; `PROOF: PASS`; delegation `2qB2YVU4…`; burner 16.441 SOL |
