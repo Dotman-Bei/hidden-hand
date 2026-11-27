@@ -2,6 +2,7 @@ import { Suspense, lazy, useEffect } from "react";
 import { Desk } from "./Desk";
 import { Tape } from "./Tape";
 import type { RoundApi } from "./useRound";
+import { playMode } from "./wallet/route";
 
 async function copyText(text: string): Promise<boolean> {
   try {
@@ -52,9 +53,33 @@ const IDLE: RoundApi = {
 const LiveApp = lazy(() => import("./useRound").then((m) => ({ default: m.LiveApp })));
 const idle = <Desk r={IDLE} tape={<Tape r={IDLE} />} />;
 
+const WalletApp = lazy(() => import("./wallet/WalletApp").then((m) => ({ default: m.WalletApp })));
+const walletIdle = (
+  <Desk
+    r={IDLE}
+    tape={<Tape r={IDLE} />}
+    chip="Wallet · devnet"
+    panel={
+      <>
+        <p className="desk-panel__title">Play with your wallet</p>
+        <p className="desk-panel__text">Loading the wallet desk…</p>
+        <button type="button" className="btn btn--primary" disabled>Connect a wallet</button>
+      </>
+    }
+  />
+);
+
 export function App() {
   useCopyButtons();
-  const named = new URLSearchParams(window.location.search).get("round") !== null;
+  const search = window.location.search;
+  if (playMode(search) === "wallet") {
+    return (
+      <Suspense fallback={walletIdle}>
+        <WalletApp />
+      </Suspense>
+    );
+  }
+  const named = new URLSearchParams(search).get("round") !== null;
   if (!named) return idle;
   return (
     <Suspense fallback={idle}>

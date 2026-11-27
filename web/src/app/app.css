@@ -101,6 +101,45 @@
 .desk__tape-time { flex: none; font-variant-numeric: tabular-nums; }
 .desk__tape-empty { margin: 0; font: 400 13px/1.35 var(--font-mono); color: var(--p-muted); }
 
+/* wallet mode: the wallet strip over the desk (same window look) and the detected wallets in the connect panel */
+.wallet-strip {
+  --desk-line: color-mix(in oklab, var(--p-ink) 13%, transparent);
+  display: grid; gap: var(--s-2); margin-bottom: var(--s-3); padding: var(--s-2) var(--s-4);
+  background: var(--p-bg); color: var(--p-ink); border: 1px solid var(--desk-line); border-radius: var(--r-lg);
+  font: 400 var(--t-small)/1.3 var(--font-text); text-align: left;
+}
+.wallet-strip__row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-5); min-height: 44px; }
+.wallet-strip__id { display: inline-flex; gap: var(--s-2); font-weight: 500; margin-right: auto; }
+.wallet-strip__mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.wallet-strip__link {
+  min-height: 44px; padding: 0; border: 0; background: none; color: var(--p-ink); font: 500 var(--t-small)/1 var(--font-text); cursor: pointer;
+  text-decoration: underline; text-underline-offset: 4px; text-decoration-color: color-mix(in oklab, var(--p-ink) 35%, transparent);
+  transition: text-decoration-color var(--dur, 160ms) var(--ease, ease);
+}
+@media (hover: hover) and (pointer: fine) { .wallet-strip__link:hover { text-decoration-color: currentColor; } }
+.wallet-strip .btn { width: auto; }
+.wallet-connect { display: grid; gap: var(--s-3); width: 100%; }
+.wallet-connect__text, .wallet-connect__act { display: flex; flex-direction: column; align-items: flex-start; gap: var(--s-3); min-width: 0; }
+@media (min-width: 768px) {
+  /* the pitch on the left, the actions and the note on the right: the hero keeps to the first screen */
+  .wallet-connect { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--s-5); align-items: start; }
+  .wallet-connect .desk-note { max-width: none; }
+}
+@media (max-width: 639px) {
+  .wallet-connect, .wallet-connect__text, .wallet-connect__act { gap: var(--s-2); }
+  .wallet-connect__act { align-items: stretch; }
+  /* nothing is dealt before a wallet connects: the four open seats keep their names, not their face-down cards */
+  .desk:has(.wallet-connect) .desk-seat__cards { display: none; }
+}
+.wallet-list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--s-2); }
+.wallet-list__btn { display: inline-flex; align-items: center; gap: var(--s-2); }
+.wallet-list__btn img { width: 20px; height: 20px; flex: none; }
+@media (max-width: 639px) {
+  .wallet-strip { padding: var(--s-2) var(--s-3); }
+  .wallet-strip .btn, .wallet-list, .wallet-list li, .wallet-list__btn { width: 100%; }
+  .wallet-list__btn { justify-content: center; }
+}
+
 /* a card: a face and a back that swap by squeezing, never by turning */
 .pit-card { position: relative; display: inline-block; flex: none; width: 28px; height: 38px; }
 .pit-card__back, .pit-card__face { position: absolute; inset: 0; display: grid; place-items: center; border-radius: var(--r-sm); }

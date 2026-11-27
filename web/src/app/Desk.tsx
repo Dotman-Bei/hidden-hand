@@ -238,7 +238,7 @@ function useChartHeight(ref: RefObject<HTMLDivElement>): number {
   return h;
 }
 
-export function Desk({ r, tape }: { r: RoundApi; tape: ReactNode }) {
+export function Desk({ r, tape, panel, chip }: { r: RoundApi; tape: ReactNode; panel?: ReactNode; chip?: string }) {
   const v = r.view;
   const ui = r.ui;
   const wrap = useRef<HTMLDivElement>(null);
@@ -252,12 +252,12 @@ export function Desk({ r, tape }: { r: RoundApi; tape: ReactNode }) {
   const idle = points.length === 0;
   const chartPoints = idle ? [{ tMs: 0, priceC: START_PRICE_C }, { tMs: durationMs, priceC: START_PRICE_C }] : points;
   const price = v ? v.priceC : START_PRICE_C;
-  const chip = r.roundParam === null ? "No round selected" : `Round ${r.roundParam} · ${r.mode === "tee" ? "Private ER" : "Commit-reveal"}`;
+  const chipText = chip ?? (r.roundParam === null ? "No round selected" : `Round ${r.roundParam} · ${r.mode === "tee" ? "Private ER" : "Commit-reveal"}`);
   const seconds = ui.kind === "trading" ? ui.secondsLeft : ui.kind === "bell" || ui.kind === "revealed" || ui.kind === "settled" ? 0 : (v?.durationSecs ?? 90);
   return (
     <div className="desk ui" data-state={ui.kind}>
       <div className="desk__bar">
-        <span className="desk__chip">{chip}</span>
+        <span className="desk__chip">{chipText}</span>
         <span className="desk__phase">{PHASE_LABEL[ui.kind]}</span>
         <span className="desk__clock" role="timer" aria-label="Time left">{clock(seconds)}</span>
       </div>
@@ -268,7 +268,7 @@ export function Desk({ r, tape }: { r: RoundApi; tape: ReactNode }) {
             <PriceChart points={chartPoints} durationMs={durationMs} revealSum={revealSum} height={height} label={idle ? "Opening price" : "Live round"} />
           </div>
           <div className="desk-panel" aria-live="polite">
-            <Panel r={r} />
+            {panel ?? <Panel r={r} />}
           </div>
         </div>
         <div className="desk__side">
