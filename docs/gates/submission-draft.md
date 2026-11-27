@@ -38,3 +38,5 @@ Field names and order come from the portal bundle (`docs/resources/2026-11-26-so
   Built during the event: one Anchor 1.0.2 program on `ephemeral-rollups-sdk` 0.18.0 (Private ER permissions, VRF on `DEFAULT_EPHEMERAL_QUEUE` inside the ER, commit + undelegate), a TypeScript client and scripted bots, and a React front end. The proof file `docs/proof/devnet-round.md` in the repo lists the base-layer signatures (open, delegations, the validator's commit/undelegate landing, claim) and the ER signatures (permissions, VRF request, trades, reveal, settle) of a real devnet round. The sealed hands ship on the Private ER (TEE); commit-reveal over VRF (sealed hands via VRF seed + committed secrets on the public devnet ER) is a switchable fallback in the same program, which is what we planned to ship if the TEE read had failed, stated in the README.
 
 - **batches:** as offered by the form.
+
+Submitted: 2026-11-27T11:57:23Z
