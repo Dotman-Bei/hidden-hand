@@ -220,6 +220,7 @@ ol.record__list { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 
   /* one screen on a phone: the two rows a visitor opens first (program, table), the legend one line a step */
   #record .record__facts { gap: 0; }
   #record .rows li:nth-child(n+3), #record .record__facts .chain { display: none; }
+  #record .rows__value { max-width: none; } /* the kit's 11ch phone cap clipped these nowrap values */
   #record .record__sigs { padding: var(--s-4); min-height: 0; gap: var(--s-3); }
   .record__list li { grid-template-columns: 96px minmax(0, 1fr); gap: var(--s-3); padding-block: var(--s-2); }
   ol.record__list li { grid-template-columns: minmax(0, 1fr) auto; }
