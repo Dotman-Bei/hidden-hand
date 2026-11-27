@@ -35,12 +35,12 @@ Run by hand on the **Vercel preview URL** from `gates:28` (the `WALLET-PREVIEW:`
 ## Result (the concierge fills this from what you report)
 
 ```
-tested: <time UTC>  wallet: <name> <version>  preview: <url>
-table: <address>  popups: <n>  trades landed: <n>/<n>
-wallet warning on trades: <text or "none">
-slow sign (~15 s): <landed | expired | not tried>
-balance: <start> -> <end> SOL
-notes: <anything odd>
+tested: 2026-11-27T11:07–11:11Z  wallet: Solflare (version not reported); OKX Wallet tried first  preview: https://hidden-hand-q9xuvteaa-heisbei-s-projects.vercel.app
+table: EFyAUPnzcaWJe57ExcgERxQSqUu9AVY14k77qrdP8nuK  popups: 3 signed by Solflare (fund, join, sign-in) + 1 trade popup hard-blocked  trades landed: 0/1
+wallet warning on trades: HARD BLOCK (Solflare, only a Close button): "Network mismatch. Your current network is set to devnet, but this transaction is for mainnet. Switch to the correct network before signing."
+slow sign (~15 s): not tried
+balance: 5.00 -> 4.97 SOL (as the app reads devnet)
+notes: OKX Wallet blocked at popup 1 (funding transfer): its popup showed Network "Solana", a USD value ($5.66) and "Insufficient balance for network fee" with Confirm disabled, i.e. OKX priced it as Solana mainnet; rejected, nothing signed. Solflare on devnet: popups 1-3 (base-layer transfer, join_table, sign-in message) passed; the FIRST Rollup trade (Sell 5, 11:10:34Z, Private ER) was hard-blocked as "for mainnet" (likely the Rollup blockhash is not a devnet blockhash; hypothesis, unproven). The round still ran with the bots: bell, reveal, settle (hidden sum 54, close 66.00, gap 12.00, Seat 2 wins 0.04 SOL; your seat flat), "Swept 0.056 SOL back to your wallet". Label issues: "Popups signed" counts requests, not signatures (it reads 1 before popup 1 is approved), and it carried 1 over from the OKX session to Solflare (final 5 vs 4 popups shown). Phantom (the wallet the plan expects to warn but allow) is not installed/visible in this Chrome profile, so it was not tested. No app console errors; network: devnet RPC and devnet-tee all 200.
 ```
 
-MANUAL-TEST: <PASS|FAIL — write exactly `MANUAL-TEST: PASS` on its own line only when steps 1–9, 12, 13 and 15 passed>
+MANUAL-TEST: FAIL (steps 1-7, 12, 13 passed with Solflare; steps 8-9 failed: Solflare hard-blocks the Rollup trade popup as "for mainnet"; OKX is blocked at popup 1 on mainnet; Phantom untested)
