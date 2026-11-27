@@ -19,8 +19,8 @@ use ephemeral_rollups_sdk::vrf::instructions::{
 };
 use ephemeral_rollups_sdk::vrf::types::SerializableAccountMeta;
 use hidden_hand_engine::{
-    cards_from_randomness, hidden_sum, pnl_c, quote, winner, Side, TradeError, CARD_COUNT, SEATS,
-    START_PRICE_C,
+    cards_for_seat, cards_from_randomness, commitment_of, hidden_sum, pnl_c, quote, winner, Side,
+    TradeError, CARD_COUNT, SEATS, START_PRICE_C,
 };
 
 pub mod errors;
@@ -220,7 +220,7 @@ pub mod hidden_hand {
             table.phase = Phase::Dealing;
             match table.mode {
                 DealMode::Tee => instruction::CallbackDeal::DISCRIMINATOR.to_vec(),
-                DealMode::CommitReveal => return err!(HhError::ModeNotSupported),
+                DealMode::CommitReveal => instruction::CallbackDealCr::DISCRIMINATOR.to_vec(),
             }
         };
         let mut metas = vec![SerializableAccountMeta {
@@ -465,6 +465,51 @@ pub mod hidden_hand {
     }
 
     // [hh:instructions:settle]
+    /// ER (VRF callback, commit-reveal mode). Store the public seed; a hand needs its owner's secret.
+    pub fn callback_deal_cr(ctx: Context<CallbackDealCr>, randomness: [u8; 32]) -> Result<()> {
+        let table = &mut ctx.accounts.table;
+        require!(table.phase == Phase::Dealing, HhError::WrongPhase);
+        require!(table.mode == DealMode::CommitReveal, HhError::ModeNotSupported);
+        table.seed = randomness;
+        let now = Clock::get()?.unix_timestamp;
+        table.start_ts = now;
+        table.end_ts = now + table.duration_secs as i64;
+        table.phase = Phase::Trading;
+        msg!("hh:dealt-cr round={} end_ts={}", table.round_id, table.end_ts);
+        Ok(())
+    }
+
+    /// ER (commit-reveal). After the bell each seat reveals its secret; the program checks it
+    /// against the join-time commitment and derives the cards. The last reveal sets Revealed.
+    pub fn reveal_secret(ctx: Context<RevealSecret>, secret: [u8; 32]) -> Result<()> {
+        let now = Clock::get()?.unix_timestamp;
+        let owner = ctx.accounts.owner.key();
+        let table = &mut ctx.accounts.table;
+        require!(table.mode == DealMode::CommitReveal, HhError::ModeNotSupported);
+        require!(table.phase == Phase::Trading, HhError::WrongPhase);
+        require!(now >= table.end_ts, HhError::BellNotRung);
+        let seat = table
+            .seats
+            .iter()
+            .position(|s| s.owner == owner)
+            .ok_or(HhError::NotSeated)?;
+        require!(!table.seats[seat].revealed, HhError::AlreadyRevealed);
+        require!(commitment_of(&secret) == table.seats[seat].commitment, HhError::BadCommitment);
+        let cards = cards_for_seat(&table.seed, &secret, seat as u8);
+        table.cards[2 * seat] = cards[0];
+        table.cards[2 * seat + 1] = cards[1];
+        table.seats[seat].revealed = true;
+        if table.seats.iter().all(|s| s.revealed) {
+            table.hidden_sum = hidden_sum(&table.cards);
+            table.phase = Phase::Revealed;
+        }
+        let hand = &mut ctx.accounts.hand;
+        hand.cards = cards;
+        hand.dealt = true;
+        msg!("hh:reveal-secret seat={} cards={:?}", seat, cards);
+        Ok(())
+    }
+
     // [hh:instructions:commit-reveal]
 }
 
@@ -692,4 +737,27 @@ pub struct ClaimPot<'info> {
 }
 
 // [hh:accounts:settle]
+#[vrf_callback]
+#[derive(Accounts)]
+pub struct CallbackDealCr<'info> {
+    // Declared here (same name and first position as the field `#[vrf_callback]` injects, which
+    // it then skips) so the identity address is the compile-time VRF_CALLBACK_IDENTITY.
+    /// Scoped VRF identity PDA, bound to this program. Its presence as a signer proves
+    /// the callback was issued by the VRF program for this program.
+    #[account(address = VRF_CALLBACK_IDENTITY)]
+    pub vrf_program_identity: Signer<'info>,
+    #[account(mut)]
+    pub table: Box<Account<'info, Table>>,
+}
+
+#[derive(Accounts)]
+pub struct RevealSecret<'info> {
+    #[account(mut, seeds = [TABLE_SEED, &table.round_id.to_le_bytes()], bump)]
+    pub table: Box<Account<'info, Table>>,
+    #[account(mut, seeds = [HAND_SEED, table.key().as_ref(), owner.key().as_ref()], bump)]
+    pub hand: Box<Account<'info, Hand>>,
+    #[account(mut)]
+    pub owner: Signer<'info>,
+}
+
 // [hh:accounts:commit-reveal]

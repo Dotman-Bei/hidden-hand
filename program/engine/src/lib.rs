@@ -102,6 +102,17 @@ pub fn winner(pnls: &[i64; SEATS]) -> u8 {
     best as u8
 }
 
+/// Commit-reveal fallback: the 32-byte commitment a seat sends at join.
+pub fn commitment_of(secret: &[u8; 32]) -> [u8; 32] {
+    solana_sha256_hasher::hashv(&[b"hidden-hand-commit".as_ref(), secret.as_ref()]).to_bytes()
+}
+
+/// Commit-reveal fallback: a seat's two cards from the public VRF seed and its private secret.
+pub fn cards_for_seat(seed: &[u8; 32], secret: &[u8; 32], seat: u8) -> [u8; 2] {
+    let h = solana_sha256_hasher::hashv(&[b"hidden-hand-cards".as_ref(), seed.as_ref(), secret.as_ref(), &[seat]]).to_bytes();
+    [1 + h[0] % CARD_MAX, 1 + h[1] % CARD_MAX]
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -204,5 +215,19 @@ mod tests {
             assert_eq!(pnls.to_vec(), c.fin.pnl_c, "{} pnl", c.name);
             assert_eq!(winner(&pnls), c.fin.winner, "{} winner", c.name);
         }
+    }
+
+    #[test]
+    fn commit_reveal_is_pinned() {
+        let secret = [7u8; 32];
+        let seed = [9u8; 32];
+        assert_eq!(
+            commitment_of(&secret),
+            [47, 239, 188, 243, 76, 65, 161, 202, 173, 206, 67, 255, 145, 173, 157, 224, 180, 87, 146, 60, 189, 203, 134, 169, 249, 122, 157, 10, 194, 227, 209, 217]
+        );
+        assert_eq!(cards_for_seat(&seed, &secret, 0), [4, 10]);
+        assert_eq!(cards_for_seat(&seed, &secret, 1), [11, 11]);
+        assert_eq!(cards_for_seat(&seed, &secret, 2), [7, 13]);
+        assert_eq!(cards_for_seat(&seed, &secret, 3), [2, 2]);
     }
 }

@@ -72,6 +72,48 @@ export type HiddenHand = {
       ]
     },
     {
+      "name": "callbackDealCr",
+      "docs": [
+        "ER (VRF callback, commit-reveal mode). Store the public seed; a hand needs its owner's secret."
+      ],
+      "discriminator": [
+        194,
+        219,
+        185,
+        204,
+        21,
+        227,
+        112,
+        105
+      ],
+      "accounts": [
+        {
+          "name": "vrfProgramIdentity",
+          "docs": [
+            "Scoped VRF identity PDA, bound to this program. Its presence as a signer proves",
+            "the callback was issued by the VRF program for this program."
+          ],
+          "signer": true,
+          "address": "6t74YQGsCu8sv8SX28jBkwwzHoiAym8pu1zDtiPCyKJ9"
+        },
+        {
+          "name": "table",
+          "writable": true
+        }
+      ],
+      "args": [
+        {
+          "name": "randomness",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "claimPot",
       "docs": [
         "Base layer, after the undelegation lands. The whole vault goes to the recorded winner, once."
@@ -952,6 +994,89 @@ export type HiddenHand = {
         }
       ],
       "args": []
+    },
+    {
+      "name": "revealSecret",
+      "docs": [
+        "ER (commit-reveal). After the bell each seat reveals its secret; the program checks it",
+        "against the join-time commitment and derives the cards. The last reveal sets Revealed."
+      ],
+      "discriminator": [
+        126,
+        156,
+        142,
+        60,
+        92,
+        135,
+        177,
+        144
+      ],
+      "accounts": [
+        {
+          "name": "table",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  97,
+                  98,
+                  108,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "table.round_id",
+                "account": "table"
+              }
+            ]
+          }
+        },
+        {
+          "name": "hand",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  104,
+                  97,
+                  110,
+                  100
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "table"
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "secret",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
     },
     {
       "name": "settleRound",

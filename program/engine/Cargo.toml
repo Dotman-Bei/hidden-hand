@@ -7,6 +7,9 @@ description = "Hidden Hand pure integer math (cards, linear-impact quotes, P&L, 
 [lib]
 name = "hidden_hand_engine"
 
+[dependencies]
+solana-sha256-hasher = { version = "3.1.0", features = ["sha2"] }
+
 [dev-dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
