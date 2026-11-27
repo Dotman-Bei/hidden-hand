@@ -1,0 +1,17 @@
+/* The price chart, shared by the landing hero and the app. Dealt tokens only (tokens.css). */
+.pit-chart { margin: 0; width: 100%; }
+.pit-chart > svg { display: block; width: 100%; height: auto; overflow: visible; }
+.pit-chart__grid { stroke: var(--ink); stroke-opacity: 0.14; stroke-width: 1; vector-effect: non-scaling-stroke; }
+.pit-chart__price { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.pit-chart__sum { stroke: var(--ink); stroke-opacity: 0.85; stroke-width: 1.5; stroke-dasharray: 6 6; vector-effect: non-scaling-stroke; }
+.pit-chart__sum-label { fill: var(--ink); font: 500 13px/1 var(--font-mono, var(--font-text)); }
+.pit-chart__reveal .pit-chart__sum {
+  stroke-dasharray: 6 6;
+  animation: pit-chart-draw var(--m-image, 600ms) var(--m-ease-enter, cubic-bezier(.22, 1, .36, 1)) both;
+}
+.pit-chart__reveal .pit-chart__sum-label { animation: pit-chart-label 400ms ease-out 500ms both; }
+@keyframes pit-chart-draw { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes pit-chart-label { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .pit-chart__reveal .pit-chart__sum, .pit-chart__reveal .pit-chart__sum-label { animation: none; }
+}

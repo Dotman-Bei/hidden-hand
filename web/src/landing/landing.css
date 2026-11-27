@@ -1,0 +1,155 @@
+/* Landing page CSS. Only what sits inside a visual (the pit, the mini visuals, the hands) and the one
+   page rule per group the kit asks for; every colour and size comes from the dealt tokens and the kit. */
+
+/* ------------------------------------------------------------------ the pit (hero window) */
+.pit-window { --pit-bg: var(--p-bg); --pit-line: color-mix(in oklab, var(--p-ink) 13%, transparent); }
+.pit {
+  font-family: var(--font-text); font-size: var(--t-small); line-height: 1.3;
+  background: var(--pit-bg); color: var(--p-ink); --ink: var(--p-ink); --muted: var(--p-muted);
+  border: 1px solid var(--pit-line); border-radius: var(--r-lg);
+  box-shadow: 0 24px 48px -24px rgb(0 0 0 / .55);
+  text-align: left; overflow: hidden;
+}
+.pit__bar { display: flex; align-items: center; gap: var(--s-3); min-height: 48px; padding: 0 var(--s-4); border-bottom: 1px solid var(--pit-line); }
+.pit__chip { margin-right: auto; font: 500 13px/1.2 var(--font-text); color: var(--p-ink); }
+.pit__clock { font: 500 14px/1 var(--font-mono); font-variant-numeric: tabular-nums; color: var(--p-ink); min-width: 4ch; text-align: right; }
+.pit__bar .btn { min-height: 32px; height: 32px; padding: 0 var(--s-3); font-size: 13px; }
+.pit__main > .loop-pause { top: 0; right: 0; bottom: auto; }
+.pit__body { display: grid; grid-template-columns: minmax(0, 1fr) 268px; gap: var(--s-5); padding: var(--s-4); }
+.pit__main { position: relative; min-width: 0; }
+.pit__price { position: absolute; top: 0; left: 0; z-index: 1; margin: 0; font: 500 28px/1 var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+.pit__side { display: grid; gap: var(--s-3); align-content: start; min-width: 0; }
+.pit__seats { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-1); }
+.pit-seat { display: grid; grid-template-columns: 52px auto 1fr; align-items: center; gap: var(--s-3); }
+.pit-seat .pit-card { width: 24px; height: 34px; }
+.pit-seat .pit-card__face { font-size: 14px; }
+.pit__tape li:nth-child(n+3) { display: none; }
+@media (max-height: 840px) { .pit__tape { display: none; } }
+.pit-seat__name { font: 500 13px/1 var(--font-text); color: var(--p-muted); }
+.pit-seat__cards { display: inline-flex; gap: var(--s-1); }
+.pit-seat__pos { font: 400 13px/1 var(--font-mono); color: var(--p-muted); text-align: right; font-variant-numeric: tabular-nums; }
+.pit__tape { list-style: none; margin: var(--s-2) 0 0; padding: var(--s-2) 0 0; display: grid; gap: var(--s-1); border-top: 1px solid var(--pit-line); }
+.pit__tape li { font: 400 13px/1.35 var(--font-mono); color: var(--p-muted); white-space: nowrap; overflow: hidden; }
+.pit__tape li:first-child { color: var(--p-ink); }
+
+/* a card: a face and a back that swap by squeezing, never by turning */
+.pit-card { position: relative; display: inline-block; flex: none; width: 28px; height: 38px; }
+.pit-card__back, .pit-card__face { position: absolute; inset: 0; display: grid; place-items: center; border-radius: var(--r-sm); }
+.pit-card__back { background: color-mix(in oklab, var(--p-ink) 11%, var(--p-bg)); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--p-ink) 26%, transparent); transition: transform 180ms cubic-bezier(.2, .8, .2, 1) 180ms; }
+.pit-card__back::after { content: ""; position: absolute; inset: 4px; border-radius: 2px; box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--p-ink) 14%, transparent); }
+.pit-card__face { background: var(--p-ink); color: var(--p-bg); font: 500 15px/1 var(--font-mono); font-variant-numeric: tabular-nums; transform: scaleX(0); transition: transform 180ms cubic-bezier(.4, 0, 1, 1) 0s; }
+.pit-card[data-up="true"] .pit-card__back { transform: scaleX(0); transition: transform 180ms cubic-bezier(.4, 0, 1, 1) 0s; }
+.pit-card[data-up="true"] .pit-card__face { transform: scaleX(1); transition: transform 180ms cubic-bezier(.2, .8, .2, 1) 180ms; }
+@media (prefers-reduced-motion: reduce) { .pit-card__back, .pit-card__face { transition: none !important; } }
+.pit-card--lg { width: 64px; height: 88px; }
+.pit-card--lg .pit-card__face { font-size: 28px; }
+
+/* the hero frame: the pit rises out of the lit ground and is cut by its foot */
+.hero--centred .hero__window { background: radial-gradient(120% 100% at 50% 0%, color-mix(in oklab, var(--ground-bg) 82%, #fff), var(--ground-bg) 62%); }
+.hero--centred .hero__window > .pit-window { width: min(880px, calc(100% - 2 * var(--s-6))); }
+.hero--centred .hero__lead { color: color-mix(in oklab, var(--ink) 74%, var(--bg)); }
+@media (max-width: 1023px) {
+  .pit__body { grid-template-columns: minmax(0, 1fr); }
+  .pit__side { display: none; }
+}
+@media (max-width: 639px) {
+  .hero--centred .hero__window > .pit-window { width: calc(100% - 2 * var(--s-4)); }
+  .pit__bar { flex-wrap: wrap; padding: var(--s-2) var(--s-3); }
+  .pit__chip { flex: 1 1 100%; }
+  .pit__body { padding: var(--s-3); }
+}
+
+/* ------------------------------------------------------------------ mini visuals (menu cards, the round) */
+.mv { position: absolute; inset: 0; z-index: 1; display: grid; place-items: center; }
+.mv-line { width: 78%; height: auto; max-height: 70%; padding: var(--s-3); box-sizing: content-box; background: var(--p-bg); border-radius: var(--r-md); overflow: visible; }
+.mv-price { fill: none; stroke: var(--p-accent); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.mv-sum { fill: none; stroke: var(--p-ink); stroke-opacity: .85; stroke-width: 1.5; stroke-dasharray: 6 6; vector-effect: non-scaling-stroke; }
+.mv--hands { display: flex; align-items: center; justify-content: center; gap: var(--s-2); }
+.mv--hands .pit-card { width: 40px; height: 56px; }
+.mv--hands .pit-card__face { font-size: 20px; }
+.mv--steps { grid-auto-flow: column; grid-auto-columns: max-content; gap: var(--s-2); align-content: center; justify-content: center; }
+.mv--steps span { display: inline-grid; place-items: center; height: 32px; padding: 0 var(--s-3); border-radius: var(--r-sm); background: var(--p-bg); color: var(--p-ink); font: 500 13px/1 var(--font-text); }
+.mv--deal { display: grid; grid-template-columns: repeat(4, 28px); grid-auto-rows: 38px; gap: var(--s-2); align-content: center; justify-content: center; }
+.mv--claim { display: flex; align-items: center; justify-content: center; gap: var(--s-3); }
+.mv-claim__fig { display: grid; gap: var(--s-1); padding: var(--s-3) var(--s-4); background: var(--p-bg); color: var(--p-ink); border-radius: var(--r-md); font: 500 20px/1 var(--font-mono); }
+.mv-claim__fig small { font: 400 13px/1 var(--font-text); color: var(--p-muted); }
+
+/* ------------------------------------------------------------------ market */
+#market .frame { min-height: 560px; padding: 0; }
+@media (max-width: 1023px) { #market .rows { display: none; } #market .frame { min-height: max(380px, calc(100svh - 600px)); } }
+@media (max-width: 639px) { #market .frame { min-height: 380px; } }
+
+/* ------------------------------------------------------------------ sealed: the hand's three states */
+#sealed .frame { padding: var(--s-6); flex-direction: column; align-items: stretch; justify-content: space-between; gap: var(--s-5); background: var(--p-bg); }
+.hands { flex: 1 1 auto; display: grid; grid-template-rows: repeat(3, minmax(0, 1fr)); }
+.hand { display: grid; grid-template-columns: auto auto 1fr; grid-template-rows: 1fr 1fr; column-gap: var(--s-2); align-items: center; border-bottom: 1px solid var(--line); }
+.hand:last-child { border-bottom: 0; }
+.hand > .pit-card { grid-row: 1 / span 2; }
+.hand > .pit-card:nth-child(2) { margin-right: var(--s-5); }
+.hand__state { grid-column: 3; grid-row: 1; align-self: end; margin: 0; font: 500 var(--t-card)/1.2 var(--font-display); }
+.hand__line { grid-column: 3; grid-row: 2; align-self: start; margin: var(--s-1) 0 0; color: var(--ink); font-size: var(--t-body); }
+.chain { display: flex; align-items: center; gap: var(--s-3); margin: 0; font-weight: 500; }
+@media (max-width: 1279px) {
+  .pit-card--lg { width: 48px; height: 66px; }
+  .pit-card--lg .pit-card__face { font-size: 22px; }
+}
+@media (max-width: 639px) {
+  #sealed .frame { padding: var(--s-4); }
+  .hand { padding-block: var(--s-3); }
+  .pit-card--lg { width: 36px; height: 50px; }
+  .pit-card--lg .pit-card__face { font-size: 18px; }
+  .hand > .pit-card:nth-child(2) { margin-right: var(--s-3); }
+}
+
+/* ------------------------------------------------------------------ round: four steps on a rail */
+.rail { margin: var(--s-7) 0 0; padding: 0; list-style: none; }
+.rail > li { display: grid; align-content: start; gap: var(--s-2); position: relative; }
+.rail .panel { --p-h: 188px; border-radius: var(--r-lg); margin-bottom: var(--s-3); }
+.rail__tag { margin: 0; font: 400 13px/1.2 var(--font-mono); color: var(--muted); }
+.rail h3 { margin: 0; }
+.rail p:not(.rail__tag) { margin: 0; color: var(--ink); max-width: 36ch; }
+@media (max-width: 1279px) { .rail > li { grid-column: auto / span 6; } }
+@media (max-width: 1023px) { .rail { margin-top: var(--s-6); } .rail .panel { --p-h: 150px; } }
+@media (max-width: 639px) { .rail > li { grid-column: 1 / -1; } }
+
+/* ------------------------------------------------------------------ statement */
+.statement .wrap { display: flex; flex-direction: column; gap: var(--s-5); }
+.statement .link { align-self: flex-start; }
+.converge { margin-top: var(--s-3); min-height: 200px; padding: var(--s-5); display: block; }
+.converge svg { display: block; width: 100%; height: 100%; min-height: 150px; overflow: visible; }
+.statement .mo-lt__type { font-size: clamp(44px, 6.4vw, 96px); max-width: 17ch; }
+.statement__line { margin: 0; max-width: 46ch; font-size: var(--t-lead); color: var(--ink); }
+@media (max-width: 639px) { .statement .mo-lt__type { font-size: clamp(36px, 11vw, 56px); } }
+
+/* ------------------------------------------------------------------ close, footer and the phone bar */
+.footer--statement { --action: var(--p-action); --action-ink: var(--p-action-ink); }
+@media (max-width: 639px) {
+  .close__word { font-size: clamp(36px, 11vw, 96px); line-height: 1; overflow: visible; }
+  .footer .footer__col h3 { margin-bottom: 0; }
+  .footer .footer__col { grid-column: 1 / -1; }
+  .closing__cta .section-head--split { gap: var(--s-4); }
+}
+
+/* the claim panel: the figure sits top left, the tile beside it */
+.mv--claim { justify-content: flex-start; align-items: flex-start; padding: var(--s-5); }
+
+/* secondary buttons stand 1.5:1 off the ground (the tonal look, one step firmer) */
+.btn--secondary { background: color-mix(in oklab, var(--ink) 17%, var(--bg)); }
+@media (hover: hover) and (pointer: fine) { .btn--secondary:hover { background: color-mix(in oklab, var(--ink) 24%, var(--bg)); } }
+.pit__bar .btn--secondary { background: color-mix(in oklab, var(--p-ink) 17%, var(--p-bg)); }
+
+@media (max-width: 639px) {
+  .pill { width: 100%; justify-content: center; }
+  .pit__price { font-size: 20px; }
+  .footer .footer__lede { display: none; }
+  .footer .footer__col ul { display: flex; flex-wrap: wrap; gap: 0 var(--s-5); }
+}
+
+/* the diagram is held still: no node or line eases in when it is scrolled into view */
+#market .dg, #market .dg *, #market .dg *::before, #market .dg *::after { transition: none !important; }
+
+/* a phone: the nav keeps the menu button; the main action stands in the hero under it and in the open sheet */
+@media (max-width: 639px) {
+  .nav:not(.is-open) .nav__actions { display: none; }
+  .nav:not(.is-open) .nav__actions + .nav__toggle, .nav:not(.is-open) .nav__toggle { margin-left: auto; }
+}

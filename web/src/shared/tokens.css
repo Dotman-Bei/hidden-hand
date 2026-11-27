@@ -1,0 +1,13 @@
+:root {
+  --p-bg: #0d060b; --p-surface: #1b0e17; --p-ink: #ffffff; --p-muted: #9a8f97;
+  --p-accent: #ff488b; --p-accent-ink: #0d060b; --p-action: #ff488b; --p-action-ink: #0d060b;
+  --p-inv-bg: #ffffff; --p-inv-surface: #ebebeb; --p-inv-ink: #0d060b; --p-inv-muted: #5e575c;
+  --p-inv-accent: #ff488b; --p-inv-accent-ink: #0d060b; --p-inv-action: #ff488b; --p-inv-action-ink: #0d060b;
+  --font-display: "Chivo", system-ui, sans-serif;
+  --font-text: "Chivo", system-ui, sans-serif;
+  --font-mono: "Chivo Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --display-weight: 400;
+  --display-tracking: -0.03em;
+  --display-tracking-xl: -0.04em;
+  --ly-scale: 0.96;
+}
