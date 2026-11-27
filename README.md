@@ -7,9 +7,9 @@ A 90-second on-chain trading pit where four sealed hands set the price of their 
 
 TBD-post-build:demo-video-url
 
-TBD-post-build:live-demo-url
+Live site: [hiddenhand.suitz.xyz](https://hiddenhand.suitz.xyz) (the pit: [/app/](https://hiddenhand.suitz.xyz/app/); rounds run on Solana devnet)
 
-TBD-post-build:delegation-tx-explorer-link
+On-chain proof: program [`HZdoTuj1N8u1EBsVB6Bd6cgXDVnswb1cX1nFkX4miRFb`](https://explorer.solana.com/address/HZdoTuj1N8u1EBsVB6Bd6cgXDVnswb1cX1nFkX4miRFb?cluster=devnet) on devnet; a base-layer [delegation transaction](https://explorer.solana.com/tx/2qB2YVU4HuebT9voJH3P6zjxaCqSmdqfE8DGtXbQUX8n68MPdD2M1dH5suHx9VW5tuCGzz5yWjjrL9qvgHNpVhoA?cluster=devnet) (`delegate_pda`, table) from the round in [docs/proof/devnet-round.md](docs/proof/devnet-round.md)
 
 ![Hidden Hand](web/public/share.jpg)
 
