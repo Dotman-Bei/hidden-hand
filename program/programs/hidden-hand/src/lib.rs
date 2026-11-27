@@ -7,7 +7,8 @@ use ephemeral_rollups_sdk::access_control::instructions::{
     CreateEphemeralPermissionCpi, UpdateEphemeralPermissionCpi,
 };
 use ephemeral_rollups_sdk::access_control::structs::{
-    EphemeralMembersArgs, EphemeralPermission, Member, AUTHORITY_FLAG, TX_LOGS_FLAG,
+    EphemeralMembersArgs, EphemeralPermission, Member, ACCOUNT_SIGNATURES_FLAG, AUTHORITY_FLAG,
+    TX_BALANCES_FLAG, TX_LOGS_FLAG, TX_MESSAGE_FLAG,
 };
 use ephemeral_rollups_sdk::anchor::{commit, delegate, ephemeral, vrf, vrf_callback};
 use ephemeral_rollups_sdk::consts::{EPHEMERAL_VAULT_ID, MAGIC_PROGRAM_ID, PERMISSION_PROGRAM_ID};
@@ -201,7 +202,11 @@ pub mod hidden_hand {
             args: EphemeralMembersArgs {
                 is_private: true,
                 members: vec![Member {
-                    flags: AUTHORITY_FLAG | TX_LOGS_FLAG,
+                    flags: AUTHORITY_FLAG
+                        | TX_LOGS_FLAG
+                        | TX_BALANCES_FLAG
+                        | TX_MESSAGE_FLAG
+                        | ACCOUNT_SIGNATURES_FLAG,
                     pubkey: owner,
                 }],
             },
