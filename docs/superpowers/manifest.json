@@ -922,6 +922,394 @@
       "human_gate": false,
       "allow_empty": false,
       "status": "done"
+    },
+    {
+      "id": "client:22",
+      "subsystem": "client",
+      "title": "Client wallet signer layer (WalletSigner, Wallet Standard adapter, mock wallet, signer-sent txs, TEE token by signMessage)",
+      "plan": "docs/superpowers/plans/2026-11-27-wallet-mode.md",
+      "depends_on": [
+        "client:2",
+        "client:5"
+      ],
+      "effort": "xhigh",
+      "model_tier": "top",
+      "files": {
+        "create": [
+          "client/src/wallet/signer.ts",
+          "client/src/wallet/standard.ts",
+          "client/src/wallet/mock.ts",
+          "client/src/wallet/actions.ts",
+          "client/src/wallet/index.ts"
+        ],
+        "modify": [
+          "client/src/index.ts",
+          "client/package.json",
+          "pnpm-lock.yaml"
+        ],
+        "test": [
+          "client/test/wallet.test.ts"
+        ]
+      },
+      "provides": [
+        "@hidden-hand/client: interface WalletSigner { readonly publicKey: PublicKey; signTransaction(tx: Transaction): Promise<Transaction>; signMessage(message: Uint8Array): Promise<Uint8Array> }, keypairSigner(kp: Keypair): WalletSigner, countingSigner(s: WalletSigner, onPopup: (kind: \"transaction\" | \"message\") => void): WalletSigner",
+        "@hidden-hand/client: sendWithSigner(connection: Connection, ixs: TransactionInstruction[], signer: WalletSigner, extraSigners?: Keypair[]): Promise<string>, readonlyProgram(connection: Connection, publicKey: PublicKey): Program<HiddenHand>, teeConnectionForSigner(signer: WalletSigner, getToken?: AuthTokenFn): Promise<{ connection: Connection; expiresAt: number }>",
+        "@hidden-hand/client: SOLANA_DEVNET_CHAIN, isSolanaSigningWallet(w: Wallet): boolean, connectStandard(w: Wallet): Promise<WalletAccount>, standardSigner(w: Wallet, account: WalletAccount, chain?: IdentifierString): WalletSigner, mockStandardWallet(kp: Keypair, o?: MockWalletOptions): Wallet",
+        "@hidden-hand/client: joinTableWith(base: Connection, signer: WalletSigner, table: PublicKey): Promise<string>, tradeWith(er: Connection, signer: WalletSigner, table: PublicKey, side: Side, qty: number): Promise<string>, readHandAs(er: Connection, table: PublicKey, owner: PublicKey, timeoutMs?: number): Promise<[number, number] | null>, fundingIxs(from: PublicKey, targets: { to: PublicKey; lamports: number }[]): TransactionInstruction[], sweepTo(base: Connection, from: Keypair, to: PublicKey): Promise<{ sig: string | null; lamports: number }>, sweepLamports(balance: number): number, isBlockhashExpired(e: unknown): boolean, isUserRejection(e: unknown): boolean"
+      ],
+      "requires": [
+        "@hidden-hand/client: tablePda(roundId: BN), handPda(table, owner), vaultPda(table)",
+        "@hidden-hand/client: baseConnection(), teeConnection(identity), publicErConnection(rpc), makeProgram(connection, keypair): Program<HiddenHand>, sendIxs(connection, ixs, payer, extraSigners?): Promise<string>",
+        "@hidden-hand/client: sendTrade(er, trader, table, side, qty): Promise<string>, settleRound(er, payer, view: TableView): Promise<string>, claimPot(base, payer, view: TableView): Promise<string>, findCommitSignatures(base, table, known: string[]): Promise<string[]>"
+      ],
+      "gate": {
+        "run": "pnpm --filter @hidden-hand/client verify",
+        "expect": "PASS: `tsc` prints nothing, vitest reports every test file passed (including `test/wallet.test.ts`), and the last line is `SMOKE: OK`."
+      },
+      "commit": "feat(client): wallet signer layer (Wallet Standard adapter, mock wallet, signer-sent base and TEE txs)",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "bots:23",
+      "subsystem": "bots",
+      "title": "Browser-safe wallet round orchestration (house + 3 in-tab bots, HouseIo, sweep)",
+      "plan": "docs/superpowers/plans/2026-11-27-wallet-mode.md",
+      "depends_on": [
+        "client:22",
+        "bots:6",
+        "bots:7"
+      ],
+      "effort": "high",
+      "model_tier": "top",
+      "files": {
+        "create": [
+          "bots/src/house-round.ts",
+          "bots/src/house-io.ts",
+          "bots/src/house.ts"
+        ],
+        "modify": [
+          "bots/package.json",
+          "bots/scripts/smoke.ts"
+        ],
+        "test": [
+          "bots/test/house-round.test.ts"
+        ]
+      },
+      "provides": [
+        "@hidden-hand/bots/house: runWalletRound(io: HouseIo, wallet: WalletSigner, vault: KeyVault, o?: WalletRoundOptions): Promise<WalletRoundResult>",
+        "@hidden-hand/bots/house: type WalletPhase = \"funding\" | \"opening\" | \"joining\" | \"signing-in\" | \"seating-bots\" | \"delegating\" | \"dealing\" | \"trading\" | \"bell\" | \"settling\" | \"claiming\" | \"sweeping\" | \"done\" | \"error\"; interface WalletRoundEvent { phase; table?; roundId?; walletEr?; view?; error?; swept? }; interface WalletRoundResult { proof: ProofData; walletPopups: number; sweptLamports: number; budget: WalletRoundBudget; table: PublicKey; roundId: string }",
+        "@hidden-hand/bots/house: interface HouseIo (all chain calls), liveHouseIo(log?: (m: string) => void): HouseIo",
+        "@hidden-hand/bots/house: walletRoundBudget(r: RoundRent): WalletRoundBudget, InsufficientFundsError { needLamports; haveLamports }, RoundAbortedError, interface KeyVault { load(): HouseKeys | null; save(keys: HouseKeys): void; clear(): void }, memoryVault(): KeyVault, serializeKeys(k: HouseKeys): string, parseKeys(text: string): HouseKeys | null, sweepAll(io: HouseIo, keys: HouseKeys, to: PublicKey): Promise<{ lamports: number; ok: boolean }>"
+      ],
+      "requires": [
+        "@hidden-hand/client: interface WalletSigner { readonly publicKey: PublicKey; signTransaction(tx: Transaction): Promise<Transaction>; signMessage(message: Uint8Array): Promise<Uint8Array> }, keypairSigner(kp: Keypair): WalletSigner, countingSigner(s: WalletSigner, onPopup: (kind: \"transaction\" | \"message\") => void): WalletSigner",
+        "@hidden-hand/client: sendWithSigner(connection: Connection, ixs: TransactionInstruction[], signer: WalletSigner, extraSigners?: Keypair[]): Promise<string>, readonlyProgram(connection: Connection, publicKey: PublicKey): Program<HiddenHand>, teeConnectionForSigner(signer: WalletSigner, getToken?: AuthTokenFn): Promise<{ connection: Connection; expiresAt: number }>",
+        "@hidden-hand/client: joinTableWith(base: Connection, signer: WalletSigner, table: PublicKey): Promise<string>, tradeWith(er: Connection, signer: WalletSigner, table: PublicKey, side: Side, qty: number): Promise<string>, readHandAs(er: Connection, table: PublicKey, owner: PublicKey, timeoutMs?: number): Promise<[number, number] | null>, fundingIxs(from: PublicKey, targets: { to: PublicKey; lamports: number }[]): TransactionInstruction[], sweepTo(base: Connection, from: Keypair, to: PublicKey): Promise<{ sig: string | null; lamports: number }>, sweepLamports(balance: number): number, isBlockhashExpired(e: unknown): boolean, isUserRejection(e: unknown): boolean",
+        "@hidden-hand/bots: mulberry32(seed): () => number, interface BotPersona {intervalMinMs, intervalMaxMs, rampMs, wobbleProb, maxLot}, interface BotMemory {wobble}, botTarget(ownSum, tMs, persona, mem): number, decide(ownSum, pos, tMs, persona, mem, rng): Order | null, personaFor(seat, rng): BotPersona, DEMO_SEED = 20261127",
+        "@hidden-hand/bots: formatProof(data: ProofData): string, checkProof(text: string): { ok: boolean; missing: string[] }"
+      ],
+      "gate": {
+        "run": "pnpm --filter @hidden-hand/bots verify",
+        "expect": "PASS: `tsc` prints nothing, vitest reports every test file passed (including `test/house-round.test.ts`), and the last line is `SMOKE: OK`."
+      },
+      "commit": "feat(bots): browser-safe wallet round (in-tab house and bots, HouseIo, sweep)",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "bots:24",
+      "subsystem": "bots",
+      "title": "Node integration script for a wallet round (mock Wallet Standard wallet signing for real) + wallet proof format",
+      "plan": "docs/superpowers/plans/2026-11-27-wallet-mode.md",
+      "depends_on": [
+        "bots:23",
+        "bots:7"
+      ],
+      "effort": "medium",
+      "files": {
+        "create": [
+          "bots/src/wallet-proof.ts",
+          "bots/scripts/wallet-round.ts",
+          "bots/scripts/check-wallet-proof.ts"
+        ],
+        "modify": [
+          "bots/package.json"
+        ],
+        "test": [
+          "bots/test/wallet-proof.test.ts"
+        ]
+      },
+      "provides": [
+        "pnpm --filter @hidden-hand/bots wallet-round -- [--dry] [--proof] [--duration <secs>] [--sign-delay-ms <ms>] -> runs one devnet wallet-mode round with the .env burner as a mock Wallet Standard wallet; writes docs/proof/wallet-round.md with --proof; last line \"WALLET-ROUND: DONE …\" (or \"WALLET-ROUND: DRY OK\" with --dry)",
+        "pnpm --filter @hidden-hand/bots check-wallet-proof -> last line \"WALLET-PROOF: PASS\"",
+        "@hidden-hand/bots/wallet-proof: formatWalletProof(d: ProofData, x: WalletProofExtra): string, checkWalletProof(text: string): { ok: boolean; missing: string[] }"
+      ],
+      "requires": [
+        "@hidden-hand/bots/house: runWalletRound(io: HouseIo, wallet: WalletSigner, vault: KeyVault, o?: WalletRoundOptions): Promise<WalletRoundResult>",
+        "@hidden-hand/bots/house: interface HouseIo (all chain calls), liveHouseIo(log?: (m: string) => void): HouseIo",
+        "@hidden-hand/bots/house: walletRoundBudget(r: RoundRent): WalletRoundBudget, InsufficientFundsError { needLamports; haveLamports }, RoundAbortedError, interface KeyVault { load(): HouseKeys | null; save(keys: HouseKeys): void; clear(): void }, memoryVault(): KeyVault, serializeKeys(k: HouseKeys): string, parseKeys(text: string): HouseKeys | null, sweepAll(io: HouseIo, keys: HouseKeys, to: PublicKey): Promise<{ lamports: number; ok: boolean }>",
+        "@hidden-hand/bots: formatProof(data: ProofData): string, checkProof(text: string): { ok: boolean; missing: string[] }"
+      ],
+      "gate": {
+        "run": "pnpm --filter @hidden-hand/bots verify; if ($?) { pnpm --filter @hidden-hand/bots wallet-round -- --dry }",
+        "expect": "PASS: `tsc` prints nothing, vitest passes every test file (including `test/wallet-proof.test.ts`), `SMOKE: OK`, and the last line is `WALLET-ROUND: DRY OK`."
+      },
+      "commit": "feat(bots): wallet-round integration script and wallet proof format",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "gates:25",
+      "subsystem": "gates",
+      "title": "Devnet wallet round with proof (HUMAN GATE — signs devnet txs with the burner as the wallet)",
+      "plan": "docs/superpowers/plans/2026-11-27-wallet-mode.md",
+      "depends_on": [
+        "bots:24"
+      ],
+      "effort": "low",
+      "model_tier": "top",
+      "files": {
+        "create": [
+          "docs/proof/wallet-round.md"
+        ],
+        "modify": [
+          "docs/gates/2026-11-26-gate-ledger.md"
+        ],
+        "test": []
+      },
+      "provides": [
+        "docs/proof/wallet-round.md (a full devnet wallet-mode round: wallet popups, wallet ER trades, the delayed-signature measurement, measured spend)"
+      ],
+      "requires": [
+        "pnpm --filter @hidden-hand/bots wallet-round -- [--dry] [--proof] [--duration <secs>] [--sign-delay-ms <ms>] -> runs one devnet wallet-mode round with the .env burner as a mock Wallet Standard wallet; writes docs/proof/wallet-round.md with --proof; last line \"WALLET-ROUND: DONE …\" (or \"WALLET-ROUND: DRY OK\" with --dry)",
+        "pnpm --filter @hidden-hand/bots check-wallet-proof -> last line \"WALLET-PROOF: PASS\""
+      ],
+      "gate": {
+        "run": "pnpm --filter @hidden-hand/bots check-wallet-proof",
+        "expect": "PASS: last line `WALLET-PROOF: PASS`."
+      },
+      "commit": "chore(gates): devnet wallet-mode round proof",
+      "human_gate": true,
+      "allow_empty": false,
+      "status": "pending",
+      "gate_profile": "wallet"
+    },
+    {
+      "id": "web:26",
+      "subsystem": "web",
+      "title": "Web wallet mode at /app/ (connect, precheck, states, popup counter, wallet trades) with Express kept",
+      "plan": "docs/superpowers/plans/2026-11-27-wallet-mode.md",
+      "depends_on": [
+        "bots:23",
+        "web:9"
+      ],
+      "effort": "high",
+      "model_tier": "top",
+      "files": {
+        "create": [
+          "web/src/app/wallet/route.ts",
+          "web/src/app/wallet/walletStates.ts",
+          "web/src/app/wallet/sessionVault.ts",
+          "web/src/app/wallet/discover.ts",
+          "web/src/app/wallet/useWalletRound.ts",
+          "web/src/app/wallet/WalletPanel.tsx",
+          "web/src/app/wallet/WalletApp.tsx"
+        ],
+        "modify": [
+          "web/src/app/App.tsx",
+          "web/src/app/Desk.tsx",
+          "web/src/app/app.css",
+          "web/app/index.html",
+          "web/package.json",
+          "pnpm-lock.yaml"
+        ],
+        "test": [
+          "web/test/walletStates.test.ts"
+        ]
+      },
+      "provides": [
+        "/app/ (no params) — wallet mode: connect a Wallet Standard wallet, precheck, fund, join, sign in, trade with one popup per trade; /app/?round=<id> and /app/?mode=express — Express mode, unchanged",
+        "@hidden-hand/web: playMode(search: string): \"wallet\" | \"express\", deriveWalletUi(i: WalletUiInput): WalletUi"
+      ],
+      "requires": [
+        "@hidden-hand/bots/house: runWalletRound(io: HouseIo, wallet: WalletSigner, vault: KeyVault, o?: WalletRoundOptions): Promise<WalletRoundResult>",
+        "@hidden-hand/bots/house: type WalletPhase = \"funding\" | \"opening\" | \"joining\" | \"signing-in\" | \"seating-bots\" | \"delegating\" | \"dealing\" | \"trading\" | \"bell\" | \"settling\" | \"claiming\" | \"sweeping\" | \"done\" | \"error\"; interface WalletRoundEvent { phase; table?; roundId?; walletEr?; view?; error?; swept? }; interface WalletRoundResult { proof: ProofData; walletPopups: number; sweptLamports: number; budget: WalletRoundBudget; table: PublicKey; roundId: string }",
+        "@hidden-hand/bots/house: interface HouseIo (all chain calls), liveHouseIo(log?: (m: string) => void): HouseIo",
+        "@hidden-hand/bots/house: walletRoundBudget(r: RoundRent): WalletRoundBudget, InsufficientFundsError { needLamports; haveLamports }, RoundAbortedError, interface KeyVault { load(): HouseKeys | null; save(keys: HouseKeys): void; clear(): void }, memoryVault(): KeyVault, serializeKeys(k: HouseKeys): string, parseKeys(text: string): HouseKeys | null, sweepAll(io: HouseIo, keys: HouseKeys, to: PublicKey): Promise<{ lamports: number; ok: boolean }>",
+        "/app/?round=<id>[&mode=tee|commit-reveal] — the live desk (spectate any round; take the free seat; trade with the hand hint)",
+        "@hidden-hand/web: deriveUiState(input: UiInput): UiState"
+      ],
+      "gate": {
+        "run": "pnpm --filter @hidden-hand/web verify; if ($?) { pnpm --filter @hidden-hand/web build }; if ($?) { Push-Location web; node \"$HOME/.claude/skills/design-taste-frontend/scripts/gate.mjs\" dist/app/index.html --root dist; Pop-Location }",
+        "expect": "PASS: vitest passes every test file (`states`, `pitTimeline`, `walletStates`), the build writes `web/dist/app/index.html`, and the gate's last line is `GATE: PASS`."
+      },
+      "commit": "feat(web): wallet mode at /app/ with Express mode kept",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "docs:27",
+      "subsystem": "docs",
+      "title": "Honest copy for wallet mode: README, landing page, submission draft",
+      "plan": "docs/superpowers/plans/2026-11-27-wallet-mode.md",
+      "depends_on": [
+        "web:26",
+        "gates:25",
+        "docs:10"
+      ],
+      "effort": "medium",
+      "files": {
+        "create": [],
+        "modify": [
+          "README.md",
+          "web/index.html",
+          "web/src/landing/main.tsx",
+          "docs/gates/submission-draft.md"
+        ],
+        "test": []
+      },
+      "provides": [
+        "README.md, web/index.html and docs/gates/submission-draft.md describe wallet mode (real wallet, one popup per trade, sealed hands on the Private ER, bots in the other seats) and Express mode honestly"
+      ],
+      "requires": [
+        "/app/ (no params) — wallet mode: connect a Wallet Standard wallet, precheck, fund, join, sign in, trade with one popup per trade; /app/?round=<id> and /app/?mode=express — Express mode, unchanged",
+        "docs/proof/wallet-round.md (a full devnet wallet-mode round: wallet popups, wallet ER trades, the delayed-signature measurement, measured spend)"
+      ],
+      "gate": {
+        "run": "$want = @('# Hidden Hand','## Demo','## What it does','## Quickstart','## Built at Solana Blitz v10 (Entertainment Finance)','## How it works','## Tech stack','## Run locally','## Contract addresses','## Roadmap','## License'); $stamp = '<!-- readme-schema: R1-web-app v1 -->'; $lines = Get-Content README.md -Encoding UTF8; $inFence = $false; $got = foreach ($l in $lines) { if ($l -match '^```') { $inFence = -not $inFence } elseif (-not $inFence -and $l -cmatch '^#{1,2} ') { $l } }; $ok = ($got.Count -eq $want.Count); if ($ok) { for ($i = 0; $i -lt $want.Count; $i++) { if ($got[$i] -cne $want[$i]) { $ok = $false } } }; $words = (Select-String -Path README.md -SimpleMatch 'linear information market' -Quiet) -and (Select-String -Path README.md -SimpleMatch 'random or idle human breaks the reveal' -Quiet) -and (Select-String -Path README.md -SimpleMatch 'Express mode' -Quiet) -and (Select-String -Path README.md -SimpleMatch 'one wallet popup per trade' -Quiet) -and (Select-String -Path README.md -SimpleMatch '### Wallet mode' -Quiet) -and -not (Select-String -Path README.md -SimpleMatch 'need no wallet prompt per trade' -Quiet) -and (Select-String -Path docs/gates/submission-draft.md -SimpleMatch 'one popup per trade' -Quiet); if ($ok -and $words -and ($lines[0] -ceq $stamp)) { Push-Location web; node \"$HOME/.claude/skills/design-taste-frontend/scripts/gate.mjs\" dist/index.html --root dist; Pop-Location } else { 'FAIL' }",
+        "expect": "PASS: the last line is `GATE: PASS` (a README or draft wording miss prints `FAIL`)."
+      },
+      "commit": "docs: wallet mode and Express mode, honestly",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "gates:28",
+      "subsystem": "gates",
+      "title": "Vercel preview of the wallet-mode build (HUMAN GATE — deploy)",
+      "plan": "docs/superpowers/plans/2026-11-27-wallet-mode.md",
+      "depends_on": [
+        "web:26",
+        "docs:27",
+        "gates:25"
+      ],
+      "effort": "low",
+      "model_tier": "top",
+      "files": {
+        "create": [],
+        "modify": [
+          "docs/gates/2026-11-26-gate-ledger.md"
+        ],
+        "test": []
+      },
+      "provides": [
+        "WALLET-PREVIEW: <https://…vercel.app> (a Vercel preview of branch wallet-mode; production untouched)"
+      ],
+      "requires": [
+        "/app/ (no params) — wallet mode: connect a Wallet Standard wallet, precheck, fund, join, sign in, trade with one popup per trade; /app/?round=<id> and /app/?mode=express — Express mode, unchanged",
+        "README.md, web/index.html and docs/gates/submission-draft.md describe wallet mode (real wallet, one popup per trade, sealed hands on the Private ER, bots in the other seats) and Express mode honestly"
+      ],
+      "gate": {
+        "run": "$u = (Select-String -Path docs/gates/2026-11-26-gate-ledger.md -Pattern 'WALLET-PREVIEW: (https://\\S+\\.vercel\\.app)' | Select-Object -Last 1).Matches[0].Groups[1].Value; $code = curl.exe -s -o NUL -w \"%{http_code}\" \"$u/app/\"; if ($u -and ($code -eq '200' -or $code -eq '401')) { 'PREVIEW: PASS' } else { \"PREVIEW: FAIL ($code)\" }",
+        "expect": "PASS: `PREVIEW: PASS` (401 = Vercel's preview protection; the user opens it logged in)."
+      },
+      "commit": "chore(gates): wallet-mode Vercel preview",
+      "human_gate": true,
+      "allow_empty": false,
+      "status": "pending",
+      "gate_profile": "deploy"
+    },
+    {
+      "id": "gates:29",
+      "subsystem": "gates",
+      "title": "The user's manual Phantom test on the preview (HUMAN GATE — real wallet)",
+      "plan": "docs/superpowers/plans/2026-11-27-wallet-mode.md",
+      "depends_on": [
+        "gates:28"
+      ],
+      "effort": "low",
+      "model_tier": "top",
+      "files": {
+        "create": [],
+        "modify": [
+          "docs/gates/wallet-manual-test.md"
+        ],
+        "test": []
+      },
+      "provides": [
+        "MANUAL-TEST: PASS|FAIL recorded in docs/gates/wallet-manual-test.md (the GO/NO-GO input, 11:30Z)"
+      ],
+      "requires": [
+        "WALLET-PREVIEW: <https://…vercel.app> (a Vercel preview of branch wallet-mode; production untouched)"
+      ],
+      "gate": {
+        "run": "if (Select-String -Path docs/gates/wallet-manual-test.md -Pattern '^MANUAL-TEST: PASS' -Quiet) { 'MANUAL-TEST: PASS' } else { 'MANUAL-TEST: FAIL' }",
+        "expect": "PASS: `MANUAL-TEST: PASS`."
+      },
+      "commit": "chore(gates): manual Phantom test of wallet mode",
+      "human_gate": true,
+      "allow_empty": false,
+      "status": "pending",
+      "gate_profile": "wallet"
+    },
+    {
+      "id": "gates:30",
+      "subsystem": "gates",
+      "title": "Merge wallet-mode into main and deploy production (HUMAN GATE — the user's explicit GO only)",
+      "plan": "docs/superpowers/plans/2026-11-27-wallet-mode.md",
+      "depends_on": [
+        "gates:29"
+      ],
+      "effort": "low",
+      "model_tier": "top",
+      "files": {
+        "create": [],
+        "modify": [
+          "docs/gates/2026-11-26-gate-ledger.md"
+        ],
+        "test": []
+      },
+      "provides": [
+        "main contains wallet-mode; hiddenhand.suitz.xyz/app/ serves wallet mode (meta hh-play-modes)"
+      ],
+      "requires": [
+        "MANUAL-TEST: PASS|FAIL recorded in docs/gates/wallet-manual-test.md (the GO/NO-GO input, 11:30Z)"
+      ],
+      "gate": {
+        "run": "git fetch -q; git merge-base --is-ancestor origin/wallet-mode origin/main; $merged = ($LASTEXITCODE -eq 0); $html = curl.exe -s https://hiddenhand.suitz.xyz/app/; if ($merged -and ($html -match 'name=\"hh-play-modes\"')) { 'PROD: PASS' } else { 'PROD: FAIL' }",
+        "expect": "PASS: `PROD: PASS`."
+      },
+      "commit": "chore(gates): wallet mode merged and live",
+      "human_gate": true,
+      "allow_empty": false,
+      "status": "pending",
+      "gate_profile": "deploy"
+    }
+  ],
+  "amendments": [
+    {
+      "spec": "docs/superpowers/specs/2026-11-27-wallet-mode-amendment.md",
+      "plan": "docs/superpowers/plans/2026-11-27-wallet-mode.md",
+      "branch": "wallet-mode",
+      "added": "2026-11-27",
+      "tasks": [
+        "client:22",
+        "bots:23",
+        "bots:24",
+        "gates:25",
+        "web:26",
+        "docs:27",
+        "gates:28",
+        "gates:29",
+        "gates:30"
+      ],
+      "go_no_go": "11:30Z 2026-11-27: without MANUAL-TEST: PASS (gates:29), gates:30 never runs and main ships as is."
     }
   ]
 }
