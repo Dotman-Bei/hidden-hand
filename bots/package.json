@@ -11,13 +11,19 @@
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
-    "verify": "tsc --noEmit -p tsconfig.json && vitest run",
-    "sim": "tsx scripts/sim-table.ts"
+    "verify": "tsc --noEmit -p tsconfig.json && vitest run && tsx scripts/smoke.ts",
+    "sim": "tsx scripts/sim-table.ts",
+    "demo-round": "tsx scripts/demo-round.ts",
+    "check-proof": "tsx scripts/check-proof.ts"
   },
   "dependencies": {
-    "@hidden-hand/client": "workspace:*"
+    "@coral-xyz/anchor": "0.32.1",
+    "@hidden-hand/client": "workspace:*",
+    "@solana/web3.js": "^1.99.0",
+    "bn.js": "^5.2.1"
   },
   "devDependencies": {
+    "@types/bn.js": "^5.1.6",
     "@types/node": "^22.15.0",
     "tsx": "^4.20.3",
     "typescript": "~5.8.3",
