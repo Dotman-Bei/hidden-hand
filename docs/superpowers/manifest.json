@@ -485,7 +485,7 @@
       "commit": "feat(web): live /app desk with chart, tape, states and on-chain record (taste gate PASS)",
       "human_gate": false,
       "allow_empty": false,
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "docs:10",
