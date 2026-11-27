@@ -1,4 +1,6 @@
-# Wallet mode: manual Phantom test (gates:29)
+# Wallet mode: manual wallet test (gates:29)
+
+This checklist uses your wallet (any Solana wallet; the checklist was written with Phantom).
 
 Run by hand on the **Vercel preview URL** from `gates:28` (the `WALLET-PREVIEW:` line in `docs/gates/2026-11-26-gate-ledger.md`). Production is not touched. Time box: 11:15–11:30Z. **GO/NO-GO at 11:30Z**: if the `MANUAL-TEST: PASS` line below is not filled in by then, wallet mode is dropped and `main` ships as is.
 
@@ -10,7 +12,7 @@ Run by hand on the **Vercel preview URL** from `gates:28` (the `WALLET-PREVIEW:`
 
 ## The round (about 4 min)
 
-1. [ ] `/app/` opens in **wallet mode** (title "Play with your wallet"; **Phantom** is listed; the honest line about a random or idle human is visible).
+1. [ ] `/app/` opens in **wallet mode** (title "Play with your wallet"; **your wallet** is listed; the honest line about a random or idle human is visible).
 2. [ ] Click **Phantom** → the Phantom connect popup → approve. The strip shows the short address, the balance and **"Popups signed: 0"**.
 3. [ ] The panel shows **"Ready: X SOL for one round"** (X ≈ 0.11). *(Optional: with a near-empty second account, check that "Not enough devnet SOL" + "Get devnet SOL" appears instead.)*
 4. [ ] **Open a table** → **popup 1** (transfer to 4 addresses) → approve. The counter shows 1. The state moves to "Opening a table…".
@@ -33,7 +35,7 @@ Run by hand on the **Vercel preview URL** from `gates:28` (the `WALLET-PREVIEW:`
 ## Result (the concierge fills this from what you report)
 
 ```
-tested: <time UTC>  wallet: Phantom <version>  preview: <url>
+tested: <time UTC>  wallet: <name> <version>  preview: <url>
 table: <address>  popups: <n>  trades landed: <n>/<n>
 wallet warning on trades: <text or "none">
 slow sign (~15 s): <landed | expired | not tried>

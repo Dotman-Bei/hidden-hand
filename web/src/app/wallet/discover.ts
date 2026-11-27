@@ -1,4 +1,4 @@
-// discover.ts — Wallet Standard discovery (Phantom, Solflare, Backpack register themselves here).
+// discover.ts — Wallet Standard discovery (any Wallet Standard wallet registers itself here).
 import { getWallets } from "@wallet-standard/app";
 import type { Wallet } from "@wallet-standard/base";
 import { isSolanaSigningWallet } from "@hidden-hand/client";

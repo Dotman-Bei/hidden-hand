@@ -89,7 +89,9 @@
       <div class="hero__head">
         <div>
           <h1 id="hero-h">Live trading pit</h1>
-          <p class="hero__lead">Connect a wallet and take the free seat. Rounds last 90 seconds on devnet, one wallet popup per trade.</p>
+          <p class="hero__lead" id="lead-wallet">Your wallet, one seat, three bots. One popup per trade.</p>
+          <p class="hero__lead" id="lead-express" hidden>Express mode: the autoplay demo with no wallet popup. Take the free seat, or a script plays seat 4.</p>
+          <script>(function(){var p=new URLSearchParams(location.search);if(p.get('round')!==null||p.get('mode')==='express'){document.getElementById('lead-wallet').hidden=true;document.getElementById('lead-express').hidden=false}})()</script>
         </div>
       </div>
       <div class="hero__stage">

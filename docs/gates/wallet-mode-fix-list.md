@@ -29,9 +29,9 @@ Items found around gates:28/29. **Copy only, no logic.** The orchestrator dispat
 
 | Item | Status |
 |---|---|
-| FIX-1 WalletPanel copy | open |
-| FIX-2 README | open |
-| FIX-3 landing/app pages | open (check) |
-| FIX-4 manual test doc | open |
-| FIX-5 Express hero lead | open |
+| FIX-1 WalletPanel copy | done (exact strings) |
+| FIX-2 README | done (exact strings) |
+| FIX-3 landing/app pages | checked: no wallet named in web/index.html or web/app/index.html; discover.ts comment generalised |
+| FIX-4 manual test doc | done (title, note line, step 1, result block) |
+| FIX-5 Express hero lead | done: lead swaps by mode (inline script, same pattern as the page head); wallet lead shortened to keep hero-maxchars at 390 |
 | Taste gate re-run (`/app/`, `/`) | open |

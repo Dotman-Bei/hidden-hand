@@ -24,7 +24,7 @@ function Connect({ w }: { w: WalletApi }) {
     <div className="wallet-connect">
       <div className="wallet-connect__text">
         <p className="desk-panel__title">Play with your wallet</p>
-        <p className="desk-panel__text">Connect a devnet wallet (Phantom, Solflare or Backpack). You hold one seat; three bots hold the others.</p>
+        <p className="desk-panel__text">Connect any Solana wallet (for example Phantom, Solflare, Backpack, OKX or MetaMask) on devnet. You hold one seat; three bots hold the others.</p>
       </div>
       <div className="wallet-connect__act">
       {w.wallets.length > 0 && (
@@ -44,7 +44,7 @@ function Connect({ w }: { w: WalletApi }) {
         <a className="btn btn--secondary" href={EXPRESS_HREF}>Express mode (no wallet)</a>
       </div>
       {asked && w.wallets.length === 0 && (
-        <p className="desk-note" role="alert">No Solana wallet found in this browser. Install Phantom, Solflare or Backpack, switch it to devnet, and reload.</p>
+        <p className="desk-note" role="alert">No Solana wallet found in this browser. Install any Solana wallet (for example Phantom, Solflare, Backpack, OKX or MetaMask), switch it to devnet, and reload.</p>
       )}
       <p className="desk-note">The price only finds the hidden sum when every seat trades its hand. A random or idle human breaks the reveal, so follow the hint.</p>
       </div>
