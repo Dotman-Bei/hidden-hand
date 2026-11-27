@@ -20,7 +20,7 @@ Field names and order come from the portal bundle (`docs/resources/2026-11-26-so
 
 - **website:** https://hiddenhand.suitz.xyz
 - **github:** https://github.com/Dotman-Bei/hidden-hand (public since 2026-11-27T08:15Z, gate `gates:18`)
-- **demo ("Pitch & Demo"):** TBD-post-build:demo-video-url
+- **demo ("Pitch & Demo"):** https://youtu.be/bl4FznfYQj0
 - **explorer ("Explorer link (integration proof)"):** https://explorer.solana.com/tx/2qB2YVU4HuebT9voJH3P6zjxaCqSmdqfE8DGtXbQUX8n68MPdD2M1dH5suHx9VW5tuCGzz5yWjjrL9qvgHNpVhoA?cluster=devnet
   (a **base-layer** `delegate_pda` transaction of our program, from the last line of `docs/proof/devnet-round.md`)
 - **On-chain addresses (optional, ≤ 28):**
