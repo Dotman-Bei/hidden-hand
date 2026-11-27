@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { WalletApi } from "./useWalletRound";
+import { WALLET_COMPAT } from "./walletStates";
 
 const EXPRESS_HREF = "/app/?mode=express";
 const sol3 = (lamports: number): string => (lamports / 1e9).toFixed(3);
@@ -70,6 +71,7 @@ function Ready({ w, need }: { w: WalletApi; need: number }) {
           <button type="button" className="btn btn--secondary" disabled={sweeping} onClick={onSweep}>Sweep leftover SOL</button>
         )}
       </div>
+      <p className="desk-note">{WALLET_COMPAT}</p>
     </>
   );
 }
@@ -118,6 +120,7 @@ export function WalletPanel({ w }: { w: WalletApi }) {
             <button type="button" className="btn btn--primary" onClick={w.retry}>Try again</button>
             <a className="btn btn--secondary" href={EXPRESS_HREF}>Express mode (no wallet)</a>
           </div>
+          <p className="desk-note">{WALLET_COMPAT}</p>
         </>
       );
     case "trading":

@@ -3,6 +3,7 @@ import { MAX_LOT, POS_CAP, START_PRICE_C, handEdge, quote, type Side } from "@hi
 import type { TableView } from "@hidden-hand/client";
 import { PriceChart } from "../shared/PriceChart";
 import type { RoundApi } from "./useRound";
+import { WALLET_BLOCKED } from "./wallet/walletStates";
 
 export const DEMO_COMMAND = "pnpm --filter @hidden-hand/bots demo-round -- --demo";
 const LOTS = [1, 2, 3, 4, 5].filter((n) => n <= MAX_LOT);
@@ -164,7 +165,7 @@ function Panel({ r }: { r: RoundApi }) {
               </div>
             </>
           )}
-          {r.actionError && <p className="desk-note" role="alert">{r.actionError}</p>}
+          {r.actionError && <p className="desk-note" role="alert">{r.actionError}{r.actionError === WALLET_BLOCKED && <> <a className="link" href="/app/?mode=express">Open Express mode</a></>}</p>}
         </>
       );
     }
@@ -179,7 +180,7 @@ function Panel({ r }: { r: RoundApi }) {
       return v ? (
         <>
           <Controls r={r} v={v} />
-          {r.actionError && <p className="desk-note" role="alert">{r.actionError}</p>}
+          {r.actionError && <p className="desk-note" role="alert">{r.actionError}{r.actionError === WALLET_BLOCKED && <> <a className="link" href="/app/?mode=express">Open Express mode</a></>}</p>}
         </>
       ) : null;
     case "bell":

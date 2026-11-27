@@ -5,7 +5,6 @@ import {
   TEE_RPC,
   baseConnection,
   connectStandard,
-  countingSigner,
   fetchTable,
   isBlockhashExpired,
   isUserRejection,
@@ -31,7 +30,31 @@ import { deriveUiState, type UiState } from "../states";
 import { further, type RoundApi, type SentTrade } from "../useRound";
 import { onWalletsChanged, solanaWallets } from "./discover";
 import { sessionVault } from "./sessionVault";
-import { deriveWalletUi, type WalletUi } from "./walletStates";
+import { WALLET_CLOSED, deriveWalletUi, walletErrorText, type WalletUi } from "./walletStates";
+
+/** Counts a popup only when the wallet hands back a signature (a refused or closed popup is not counted). */
+function signedCounter(s: WalletSigner, onSigned: () => void): WalletSigner {
+  return {
+    publicKey: s.publicKey,
+    signTransaction: async (tx) => {
+      const out = await s.signTransaction(tx);
+      onSigned();
+      return out;
+    },
+    signMessage: async (m) => {
+      const out = await s.signMessage(m);
+      onSigned();
+      return out;
+    },
+  };
+}
+
+/** A wallet that blocks a popup without answering must not hang the trade buttons. */
+function answerWithin(s: WalletSigner, ms: number): WalletSigner {
+  const limit = <T,>(p: Promise<T>): Promise<T> =>
+    Promise.race([p, new Promise<T>((_, no) => setTimeout(() => no(new Error(`The wallet did not answer within ${ms / 1000} s`)), ms))]);
+  return { publicKey: s.publicKey, signTransaction: (tx) => limit(s.signTransaction(tx)), signMessage: (m) => limit(s.signMessage(m)) };
+}
 
 export interface WalletApi {
   ui: WalletUi;
@@ -40,7 +63,7 @@ export interface WalletApi {
   address: string | null;
   balance: number | null; // lamports, base devnet
   needLamports: number | null; // walletRoundBudget(rent).total
-  popups: number; // every signTransaction / signMessage asked of the wallet this session
+  popups: number; // signatures the wallet returned, for this wallet and this round
   swept: number | null; // lamports swept back at the end
   leftover: boolean; // sessionVault() holds keys from an unfinished round
   connect(name: string): Promise<void>;
@@ -142,7 +165,8 @@ export function useWalletRound(): { round: RoundApi; wallet: WalletApi } {
       setError(null);
       try {
         const account = await connectStandard(w);
-        const signer = countingSigner(standardSigner(w, account), () => setPopups((n) => n + 1));
+        const signer = signedCounter(standardSigner(w, account), () => setPopups((n) => n + 1));
+        setPopups(0); // a new wallet starts its own count
         signerRef.current = signer;
         setWalletName(w.name);
         setAddress(signer.publicKey.toBase58());
@@ -150,7 +174,7 @@ export function useWalletRound(): { round: RoundApi; wallet: WalletApi } {
         setBalance(null);
         await Promise.all([readBalance(), readNeed()]);
       } catch (e) {
-        setError(isUserRejection(e) ? "You closed the wallet popup, so no wallet was connected." : message(e));
+        setError(walletErrorText(message(e), isUserRejection(e), "You closed the wallet popup, so no wallet was connected."));
       }
     },
     [found, readBalance, readNeed],
@@ -179,6 +203,7 @@ export function useWalletRound(): { round: RoundApi; wallet: WalletApi } {
     const run = ++runRef.current;
     resetRound();
     setSwept(null);
+    setPopups(0); // a new round starts its own count
     const onEvent = (e: WalletRoundEvent) => {
       if (runRef.current !== run) return;
       setPhase(e.phase);
@@ -207,7 +232,7 @@ export function useWalletRound(): { round: RoundApi; wallet: WalletApi } {
         setPhase(null);
         return;
       }
-      setError(isUserRejection(e) ? "You closed the wallet popup, so the round stopped. Leftover SOL was swept back to your wallet." : message(e));
+      setError(walletErrorText(message(e), isUserRejection(e), "You closed the wallet popup, so the round stopped. Leftover SOL was swept back to your wallet."));
     } finally {
       if (runRef.current === run) {
         setLeftover(sessionVault().load() !== null);
@@ -334,15 +359,13 @@ export function useWalletRound(): { round: RoundApi; wallet: WalletApi } {
       setActing("trade");
       setActionError(null);
       try {
-        const sig = await tradeWith(er, signer, table, side, qty);
+        const sig = await tradeWith(er, answerWithin(signer, 45_000), table, side, qty);
         setSent((prev) => [...prev, { sig, side, qty }]);
       } catch (e) {
         setActionError(
           isBlockhashExpired(e)
             ? "That signature took too long for the Rollup. Sign again a little faster."
-            : isUserRejection(e)
-              ? "You closed the popup. No trade was sent."
-              : message(e),
+            : walletErrorText(message(e), isUserRejection(e), WALLET_CLOSED),
         );
       } finally {
         setActing(null);

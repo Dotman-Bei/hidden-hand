@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { playMode } from "../src/app/wallet/route";
-import { deriveWalletUi, type WalletUiInput } from "../src/app/wallet/walletStates";
+import { WALLET_BLOCKED, WALLET_CLOSED, deriveWalletUi, walletErrorText, type WalletUiInput } from "../src/app/wallet/walletStates";
 
 const base: WalletUiInput = { connected: false, wallets: [], balance: null, needLamports: null, phase: null, endTs: null, nowMs: 1_000_000, error: null };
 
@@ -43,5 +43,15 @@ describe("deriveWalletUi", () => {
   });
   it("an error wins and is retryable", () => {
     expect(deriveWalletUi({ ...base, connected: true, phase: "error", error: "boom" })).toEqual({ kind: "error", message: "boom", retryable: true });
+  });
+});
+
+describe("walletErrorText", () => {
+  it("a Reject is closed; a mismatch, mainnet fee or silent wallet is blocked; other errors keep their text", () => {
+    expect(walletErrorText("User rejected the request.", true)).toBe(WALLET_CLOSED);
+    expect(walletErrorText("Network mismatch: this transaction is for mainnet", false)).toBe(WALLET_BLOCKED);
+    expect(walletErrorText("Insufficient balance for network fee", false)).toBe(WALLET_BLOCKED);
+    expect(walletErrorText("The wallet did not answer within 45 s", false)).toBe(WALLET_BLOCKED);
+    expect(walletErrorText("account not found", false)).toBe("account not found");
   });
 });
