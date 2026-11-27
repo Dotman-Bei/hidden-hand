@@ -230,7 +230,7 @@
       "commit": "feat(program): settle_round commit+undelegate and claim_pot payout",
       "human_gate": false,
       "allow_empty": false,
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "client:5",
@@ -276,7 +276,7 @@
       "commit": "feat(client): TS engine port on shared golden vectors, trade/settle/claim API",
       "human_gate": false,
       "allow_empty": false,
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "bots:6",
@@ -317,7 +317,7 @@
       "commit": "feat(bots): linear-information bot policy with convergence Monte Carlo gate",
       "human_gate": false,
       "allow_empty": false,
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "bots:7",
@@ -649,7 +649,7 @@
       "commit": "chore(gates): Day-1 spike result",
       "human_gate": true,
       "allow_empty": false,
-      "status": "pending",
+      "status": "done",
       "gate_profile": "wallet"
     },
     {
