@@ -11,7 +11,7 @@
   ],
   "spike_rule": "If docs/spike/spike-result.md does not show (a) PASS, (b) PASS and (c) PASS by 2 h after Step 2 starts, copy docs/superpowers/manifest-fallback.json over docs/superpowers/manifest.json, commit, and do not revisit.",
   "burner": "HH_BURNER_KEYPAIR_JSON from the cross-session store (the git-ignored repo-root .env; optionally the user env var). Never from the repo.",
-  "variant": "tee",
+  "variant": "commit-reveal (fallback: manifest.json + program:20 + client:21)",
   "tasks": [
     {
       "id": "program:1",
@@ -328,7 +328,9 @@
         "bots:6",
         "client:5",
         "client:2",
-        "gates:14"
+        "gates:14",
+        "program:20",
+        "client:21"
       ],
       "effort": "high",
       "model_tier": "top",
@@ -661,7 +663,9 @@
         "program:4",
         "bots:7",
         "gates:14",
-        "program:1"
+        "program:1",
+        "program:20",
+        "client:21"
       ],
       "effort": "low",
       "model_tier": "top",
@@ -701,7 +705,9 @@
         "gates:15",
         "web:9",
         "docs:10",
-        "program:1"
+        "program:1",
+        "program:20",
+        "client:21"
       ],
       "effort": "low",
       "model_tier": "top",
@@ -827,6 +833,95 @@
       "allow_empty": false,
       "status": "pending",
       "gate_profile": "submission"
+    },
+    {
+      "id": "program:20",
+      "subsystem": "program",
+      "title": "Commit-reveal instructions (program delta)",
+      "plan": "docs/superpowers/plans/2026-11-26-fallback.md",
+      "depends_on": [
+        "program:4",
+        "gates:14",
+        "program:1"
+      ],
+      "effort": "xhigh",
+      "model_tier": "top",
+      "files": {
+        "create": [],
+        "modify": [
+          "program/engine/Cargo.toml",
+          "program/engine/src/lib.rs",
+          "program/programs/hidden-hand/src/lib.rs",
+          "program/Cargo.lock",
+          "client/src/idl/hidden_hand.json",
+          "client/src/idl/hidden_hand.ts"
+        ],
+        "test": []
+      },
+      "provides": [
+        "hidden_hand_engine::commitment_of(secret: &[u8; 32]) -> [u8; 32]",
+        "hidden_hand_engine::cards_for_seat(seed: &[u8; 32], secret: &[u8; 32], seat: u8) -> [u8; 2]",
+        "ix callback_deal_cr(randomness: [u8; 32])",
+        "ix reveal_secret(secret: [u8; 32]) [ER; accounts table, hand, owner]"
+      ],
+      "requires": [
+        "program/scripts/wsl-build.sh [build|sync-id] -> last line \"HH-GATE: PASS\"",
+        "lib.rs markers // [hh:instructions:market] // [hh:instructions:settle] // [hh:instructions:commit-reveal] // [hh:accounts:market] // [hh:accounts:settle] // [hh:accounts:commit-reveal]",
+        "ix settle_round() [ER; accounts payer, table, hand0..hand3; commits + undelegates table and 4 hands]"
+      ],
+      "gate": {
+        "run": "wsl -d Ubuntu-24.04 -u root --exec bash -l program/scripts/wsl-build.sh build",
+        "expect": "PASS — last line `HH-GATE: PASS`"
+      },
+      "commit": "feat(program): commit-reveal fallback deal (callback_deal_cr, reveal_secret)",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "client:21",
+      "subsystem": "client",
+      "title": "Commit-reveal DealAdapter and the default-mode switch (client delta)",
+      "plan": "docs/superpowers/plans/2026-11-26-fallback.md",
+      "depends_on": [
+        "program:20",
+        "client:5",
+        "client:2"
+      ],
+      "effort": "high",
+      "files": {
+        "create": [
+          "client/src/deal/commit-reveal.ts"
+        ],
+        "modify": [
+          "client/src/deal/index.ts",
+          "client/src/config.ts"
+        ],
+        "test": [
+          "client/test/commit-reveal.test.ts"
+        ]
+      },
+      "provides": [
+        "@hidden-hand/client: CrDealAdapter (mode \"commit-reveal\", devnet-as) via createDealAdapter(\"commit-reveal\", store); DEFAULT_DEAL_MODE = \"commit-reveal\"",
+        "@hidden-hand/client: commitmentOf(secret: Uint8Array): Uint8Array, cardsForSeat(seed: Uint8Array, secret: Uint8Array, seat: number): [number, number]"
+      ],
+      "requires": [
+        "hidden_hand_engine::commitment_of(secret: &[u8; 32]) -> [u8; 32]",
+        "hidden_hand_engine::cards_for_seat(seed: &[u8; 32], secret: &[u8; 32], seat: u8) -> [u8; 2]",
+        "ix reveal_secret(secret: [u8; 32]) [ER; accounts table, hand, owner]",
+        "@hidden-hand/client: createDealAdapter(mode: DealMode, store: SecretStore): DealAdapter",
+        "@hidden-hand/client: interface DealAdapter { mode; erRpc; validator; commitmentFor(table, owner): Uint8Array; erConnection(identity: Keypair): Promise<Connection>; afterDelegate(ctx: DealContext): Promise<string[]>; readOwnHand(ctx: DealContext, owner: Keypair): Promise<[number, number] | null>; reveal(ctx: DealContext, seatKeys: Keypair[]): Promise<string[]> }",
+        "@hidden-hand/client: interface DealContext { roundId: BN; table: PublicKey; seatOwners: PublicKey[]; payer: Keypair }",
+        "@hidden-hand/client: interface SecretStore { get(key: string): Uint8Array | null; set(key: string, value: Uint8Array): void } + memorySecretStore()"
+      ],
+      "gate": {
+        "run": "pnpm --filter @hidden-hand/client verify",
+        "expect": "PASS — `tsc` prints nothing; vitest reports `7 passed` test files."
+      },
+      "commit": "feat(client): commit-reveal deal adapter and fallback default mode",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
     }
   ]
 }

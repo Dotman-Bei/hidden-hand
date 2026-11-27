@@ -65,3 +65,9 @@ TEE path eligible: no — switch to manifest-fallback.json
 - stranger read (confirmed): null
 - payer read (confirmed, non-member): null
 - no-token read (confirmed): null
+
+## Decision (orchestrator, 2026-11-27 02:05Z)
+
+- Rule (user-approved, guide): owner decodes a dealt hand and the stranger does not by 22:45Z, else merge manifest-fallback.json and never revisit.
+- Evidence: diagnostic round 3 above. The owner (token pubkey = permission member, flags AUTHORITY|TX_LOGS) read a blurred 76-byte Hand body (undecodable); stranger, payer and no-token read null. The planned all-flags permission fix was interrupted at ~21:45Z by the account usage limit before any file changed, so no redeploy #2 or diagnostic run #2 happened before the 22:45Z cap.
+- Outcome: (a) not PASS by the cap, so the build switched to the commit-reveal fallback (merge command, statuses kept: commit "chore: switch to the commit-reveal fallback manifest"). Not revisited.
