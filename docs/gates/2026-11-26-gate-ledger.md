@@ -200,7 +200,7 @@ Commands are verbatim from `docs/superpowers/plans/2026-11-26-gates.md` (PowerSh
 | imp-repo | Repo-public / invite flip | = gates:18 | closing | — |
 | imp-form | Submission form fill + Submit | = gates:19 | closing | Fill and Submit are two consents. |
 | imp-tg-wallet | Telegram sign-in + prize wallet connect | B (sign-in if logged out) / C (wallet) | closing | Your real wallet; not this session's grant. |
-| imp-video | Demo video URL ("Pitch & Demo") | — (demo-studio, Step 2.5) | closing | Dependency for gates:19, not a concierge gate. |
+| imp-video | Demo video URL ("Pitch & Demo") | — (demo-studio, Step 2.5) | closing | **Done 2026-11-27:** https://youtu.be/bl4FznfYQj0 (unlisted). Dependency for gates:19, not a concierge gate. |
 
 ## Recommended order
 
@@ -238,3 +238,5 @@ Every OAuth, CAPTCHA, faucet request and on-chain action is logged here.
 | 2026-11-27T08:08Z | web-deploy | **Direct production deploy** of `web/dist`; **domain `hiddenhand.suitz.xyz` added** to that project (no DNS edit) | `/` and `/app/` → 200 logged-out, TLS OK; fallback `hidden-hand-sable.vercel.app` |
 | 2026-11-27T08:15Z | gates:18 | **Repo made public** (`gh repo edit … --visibility public`) after the concierge's own history scans; description and 5 topics set; no invites | `REPO-ACCESS: PASS`; github.com page 200 logged-out |
 | 2026-11-27T08:17Z | gates:19 prep | README `live-demo-url` + `delegation-tx-explorer-link` and the draft's website/explorer/program/wallet resolved (`docs: resolve post-build facts`). **The demo-video TBD is left for demo-studio. gates:19 NOT run** (it needs its own consent) | — |
+| 2026-11-27T08:41Z | demo (2.5) | **Upload hold check**: repo public (API `private: false`), logged-out GET 200, outro QR in the final file matches the URL | QR 841/841 modules |
+| 2026-11-27T08:49Z | demo (2.5) | **Upload** to YouTube, **unlisted**, on the user's consent ("watched, upload it, repo is public"). Browser automation of the user's logged-in Studio session (**not ToS-clean**; own content, one upload). The upload tool refused the file outside the session's folders; the user chose to have it copied to the session temp folder. Declared "not made for kids" and "AI use: No" (none of the four listed cases; synthetic narration is stated in the description). Copyright check: no issues found | https://youtu.be/bl4FznfYQj0; sha256 `7492557d05204e44fb598454353266de38d85dcdbcc08624355f65dab1210374`, 9,182,142 bytes, 126.1 s; logged-out check passed |

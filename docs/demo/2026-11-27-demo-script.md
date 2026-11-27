@@ -119,8 +119,8 @@ Upload hold: the repo is private. No upload until the user confirms it is public
 | Description | Hidden Hand is an on-chain trading pit on Solana devnet, built for Solana Blitz v10 (Entertainment Finance). MagicBlock VRF deals four seats sealed two-card hands inside a Private Ephemeral Rollup (TEE); a hand is readable by its owner only. Everyone trades one contract worth the hidden sum of all the cards against an on-chain market maker, with zero-fee trades on the Rollup. It is a linear information market: each trade's size encodes what a sealed hand knows, so the price converging on the hidden sum is by design, not emergent bot cleverness. A random or idle human breaks the reveal, so `--demo` fills seat 4 with a bot; in this recording seat 4 is a browser (clicks automated) that follows the on-screen hint. At the bell the hands flip, the round commits back to Solana and the winner's pot is claimed. Commit-reveal over VRF is a switchable fallback in the same program. Devnet only, no real funds, unaudited. The first pit shown is illustrative; the trading phase is sped up and chain waiting time is trimmed. Narration is a synthetic voice. Program: HZdoTuj1N8u1EBsVB6Bd6cgXDVnswb1cX1nFkX4miRFb · Code: https://github.com/Dotman-Bei/hidden-hand · music attribution: none (no music) |
 | Tags | Solana, MagicBlock, Ephemeral Rollup, Private Ephemeral Rollup, VRF, TEE, Solana Blitz, hackathon, devnet |
 | Visibility | unlisted |
-| URL | TBD |
-| Verified logged-out | TBD |
+| URL | https://youtu.be/bl4FznfYQj0 |
+| Verified logged-out | 2026-11-27 (oEmbed 200; fresh browser: playable, unlisted, 126 s, title, description and tags match this block) |
 | Resolves | submission-draft demo video URL |
 
 ## 8 — Status ledger
@@ -135,3 +135,4 @@ Upload hold: the repo is private. No upload until the user confirms it is public
 | 2026-11-27 | assembled | demo-studio |
 | 2026-11-27 | QC passed [residuals: narration pronunciation not checked by ear; the S1 landing text says 90-second while the recorded demo-mode round is 75 s; the S3 quote shows the spike run's cards, not this round's; the S7 close-up shows the Trade log without the program id; true peak −1.35 dBTP against a −1.5 target; the outro repo link is 404 logged-out until gates:18] | demo-studio |
 | 2026-11-27 | watched | the user |
+| 2026-11-27 | uploaded (https://youtu.be/bl4FznfYQj0) | demo-studio, on the user's upload consent |
