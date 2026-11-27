@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Hidden Hand · the pit</title>
-<meta name="description" content="Watch any round of the Hidden Hand trading pit live on Solana devnet, take the free seat and trade with the hint your sealed hand gives you.">
+<meta name="description" content="Play the Hidden Hand trading pit on Solana devnet with your own wallet: one seat, three bots, sealed hands on the MagicBlock Private ER, one wallet popup per trade. Express mode keeps the no-wallet demo.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Hidden Hand · the pit">
-<meta property="og:description" content="The live desk: one 90-second round, four seats, zero-fee trades and an on-chain record of every transaction that lands on Solana.">
+<meta property="og:description" content="Play the Hidden Hand trading pit on Solana devnet with your own wallet: one seat, three bots, sealed hands on the MagicBlock Private ER, one wallet popup per trade. Express mode keeps the no-wallet demo.">
 <meta property="og:image" content="/share.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='%23ff488b'%3E%3Ccircle cx='6.5' cy='6.5' r='4.5'/%3E%3Ccircle cx='17.5' cy='6.5' r='4.5'/%3E%3Ccircle cx='6.5' cy='17.5' r='4.5'/%3E%3Crect x='13' y='13' width='9' height='9' rx='1.5'/%3E%3C/g%3E%3C/svg%3E" type="image/svg+xml">
@@ -15,6 +15,7 @@
 <!-- <link rel="canonical" href="https://[the client's domain]/app/"> waits for the domain -->
 <meta name="site-kind" content="software">
 <meta name="page-type" content="software">
+<meta name="hh-play-modes" content="wallet express">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Chivo:wght@400..700&family=Chivo+Mono:wght@400..500&display=swap" rel="stylesheet">
@@ -88,7 +89,9 @@
       <div class="hero__head">
         <div>
           <h1 id="hero-h">Live trading pit</h1>
-          <p class="hero__lead">Spectate any round or take the free seat. Each round lasts 90 seconds on devnet, with no trade fee and no wallet prompt.</p>
+          <p class="hero__lead" id="lead-wallet">Your wallet, one seat, three bots. One popup per trade.</p>
+          <p class="hero__lead" id="lead-express" hidden>Express mode: the autoplay demo with no wallet popup. Take the free seat, or a script plays seat 4.</p>
+          <script>(function(){var p=new URLSearchParams(location.search);if(p.get('round')!==null||p.get('mode')==='express'){document.getElementById('lead-wallet').hidden=true;document.getElementById('lead-express').hidden=false}})()</script>
         </div>
       </div>
       <div class="hero__stage">

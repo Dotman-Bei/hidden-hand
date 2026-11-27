@@ -19,7 +19,10 @@
     "@coral-xyz/anchor": "0.32.1",
     "@magicblock-labs/ephemeral-rollups-sdk": "0.18.0",
     "@noble/hashes": "^1.8.0",
+    "@solana/wallet-standard-features": "1.5.0",
     "@solana/web3.js": "^1.99.0",
+    "@wallet-standard/base": "1.1.1",
+    "@wallet-standard/features": "1.1.1",
     "bn.js": "^5.2.1",
     "tweetnacl": "^1.0.3"
   },

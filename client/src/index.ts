@@ -10,3 +10,4 @@ export * from "./spike-report";
 export type { HiddenHand } from "./idl/hidden_hand";
 export * from "./engine";
 export * from "./round-play";
+export * from "./wallet/index";

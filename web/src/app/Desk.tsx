@@ -3,6 +3,7 @@ import { MAX_LOT, POS_CAP, START_PRICE_C, handEdge, quote, type Side } from "@hi
 import type { TableView } from "@hidden-hand/client";
 import { PriceChart } from "../shared/PriceChart";
 import type { RoundApi } from "./useRound";
+import { WALLET_BLOCKED } from "./wallet/walletStates";
 
 export const DEMO_COMMAND = "pnpm --filter @hidden-hand/bots demo-round -- --demo";
 const LOTS = [1, 2, 3, 4, 5].filter((n) => n <= MAX_LOT);
@@ -164,7 +165,7 @@ function Panel({ r }: { r: RoundApi }) {
               </div>
             </>
           )}
-          {r.actionError && <p className="desk-note" role="alert">{r.actionError}</p>}
+          {r.actionError && <p className="desk-note" role="alert">{r.actionError}{r.actionError === WALLET_BLOCKED && <> <a className="link" href="/app/?mode=express">Open Express mode</a></>}</p>}
         </>
       );
     }
@@ -179,7 +180,7 @@ function Panel({ r }: { r: RoundApi }) {
       return v ? (
         <>
           <Controls r={r} v={v} />
-          {r.actionError && <p className="desk-note" role="alert">{r.actionError}</p>}
+          {r.actionError && <p className="desk-note" role="alert">{r.actionError}{r.actionError === WALLET_BLOCKED && <> <a className="link" href="/app/?mode=express">Open Express mode</a></>}</p>}
         </>
       ) : null;
     case "bell":
@@ -238,7 +239,7 @@ function useChartHeight(ref: RefObject<HTMLDivElement>): number {
   return h;
 }
 
-export function Desk({ r, tape }: { r: RoundApi; tape: ReactNode }) {
+export function Desk({ r, tape, panel, chip }: { r: RoundApi; tape: ReactNode; panel?: ReactNode; chip?: string }) {
   const v = r.view;
   const ui = r.ui;
   const wrap = useRef<HTMLDivElement>(null);
@@ -252,12 +253,12 @@ export function Desk({ r, tape }: { r: RoundApi; tape: ReactNode }) {
   const idle = points.length === 0;
   const chartPoints = idle ? [{ tMs: 0, priceC: START_PRICE_C }, { tMs: durationMs, priceC: START_PRICE_C }] : points;
   const price = v ? v.priceC : START_PRICE_C;
-  const chip = r.roundParam === null ? "No round selected" : `Round ${r.roundParam} · ${r.mode === "tee" ? "Private ER" : "Commit-reveal"}`;
+  const chipText = chip ?? (r.roundParam === null ? "No round selected" : `Round ${r.roundParam} · ${r.mode === "tee" ? "Private ER" : "Commit-reveal"}`);
   const seconds = ui.kind === "trading" ? ui.secondsLeft : ui.kind === "bell" || ui.kind === "revealed" || ui.kind === "settled" ? 0 : (v?.durationSecs ?? 90);
   return (
     <div className="desk ui" data-state={ui.kind}>
       <div className="desk__bar">
-        <span className="desk__chip">{chip}</span>
+        <span className="desk__chip">{chipText}</span>
         <span className="desk__phase">{PHASE_LABEL[ui.kind]}</span>
         <span className="desk__clock" role="timer" aria-label="Time left">{clock(seconds)}</span>
       </div>
@@ -268,7 +269,7 @@ export function Desk({ r, tape }: { r: RoundApi; tape: ReactNode }) {
             <PriceChart points={chartPoints} durationMs={durationMs} revealSum={revealSum} height={height} label={idle ? "Opening price" : "Live round"} />
           </div>
           <div className="desk-panel" aria-live="polite">
-            <Panel r={r} />
+            {panel ?? <Panel r={r} />}
           </div>
         </div>
         <div className="desk__side">

@@ -7,6 +7,8 @@ A 90-second on-chain trading pit where four sealed hands set the price of their 
 
 https://youtu.be/bl4FznfYQj0
 
+The video shows Express mode: an autoplay demo round with no wallet popup, where a script plays seat 4. The live app at `/app/` defaults to wallet mode (real wallet popups, one per trade); `/app/?mode=express` is Express mode.
+
 Live site: [hiddenhand.suitz.xyz](https://hiddenhand.suitz.xyz) (the pit: [/app/](https://hiddenhand.suitz.xyz/app/); rounds run on Solana devnet)
 
 On-chain proof: program [`HZdoTuj1N8u1EBsVB6Bd6cgXDVnswb1cX1nFkX4miRFb`](https://explorer.solana.com/address/HZdoTuj1N8u1EBsVB6Bd6cgXDVnswb1cX1nFkX4miRFb?cluster=devnet) on devnet; a base-layer [delegation transaction](https://explorer.solana.com/tx/2qB2YVU4HuebT9voJH3P6zjxaCqSmdqfE8DGtXbQUX8n68MPdD2M1dH5suHx9VW5tuCGzz5yWjjrL9qvgHNpVhoA?cluster=devnet) (`delegate_pda`, table) from the round in [docs/proof/devnet-round.md](docs/proof/devnet-round.md)
@@ -15,7 +17,7 @@ On-chain proof: program [`HZdoTuj1N8u1EBsVB6Bd6cgXDVnswb1cX1nFkX4miRFb`](https:/
 
 ## What it does
 
-Prediction-style games on a public chain usually fail at the one thing they need: nobody can hold a secret, so nobody can trade on private information. Hidden Hand deals each of four seats two sealed cards inside a MagicBlock Private Ephemeral Rollup, and everyone trades one contract worth the hidden sum of all eight cards against an on-chain market maker. It is a **linear information market**: one contract moves the price one point, so each trade's size encodes what a sealed hand knows, and the price converges on the hidden sum **by design**, not through clever bots. Trades on the Ephemeral Rollup are zero-fee and need no wallet prompt per trade. At the bell the hands flip public, the round settles, and the best trader takes the pot on the base layer. Scripted bots fill empty seats.
+Prediction-style games on a public chain usually fail at the one thing they need: nobody can hold a secret, so nobody can trade on private information. Hidden Hand deals each of four seats two sealed cards inside a MagicBlock Private Ephemeral Rollup, and everyone trades one contract worth the hidden sum of all eight cards against an on-chain market maker. It is a **linear information market**: one contract moves the price one point, so each trade's size encodes what a sealed hand knows, and the price converges on the hidden sum **by design**, not through clever bots. Trades on the Ephemeral Rollup are zero-fee. **Wallet mode** (the default at `/app/`) seats you with your own devnet wallet (any Solana wallet that supports the Wallet Standard: Phantom, Solflare, Backpack...): one wallet popup per trade, three bots in the other seats, and an in-tab house that opens, deals, settles and sweeps its leftover SOL back to you. **Express mode** (`/app/?mode=express`, or the link `demo-round` prints) is the no-wallet demo with a burner seat key and no prompt per trade; it is what the demo video shows. At the bell the hands flip public, the round settles, and the best trader takes the pot on the base layer. Scripted bots fill empty seats.
 
 ## Quickstart
 
@@ -33,6 +35,8 @@ pnpm --filter @hidden-hand/bots demo-round -- --demo
 ```
 
 The runner prints `/app/?round=<id>`; open that on the running web app to spectate, take the free seat, and trade with the hand hint.
+
+Or open `/app/` with a devnet wallet and press **Open a table**: one round needs about 0.09 devnet SOL (the app shows the exact amount before you sign), and the leftover comes back to the wallet at the end.
 
 ## Built at Solana Blitz v10 (Entertainment Finance)
 
@@ -62,6 +66,18 @@ The hidden sum is a sum of private signals, so a seat's information is worth exa
 | seat 4 = idle human | 51.1 % |
 
 **A random or idle human breaks the reveal, which is why `--demo` fills seat 4 with a bot.** A human who follows the on-screen hint behaves like a bot and keeps the close within 4.
+
+### Wallet mode
+
+Wallet mode is what `/app/` opens with no parameters; `/app/?mode=express` and the runner's `/app/?round=<id>` link open Express mode instead. Sealed hands run on the MagicBlock Private ER (TEE) in both modes.
+
+- **Popups, in order:** one transfer that funds the round, one to take your seat, one sign-in message for the Private ER token, then one wallet popup per trade.
+- **Keys:** the house and the three bot keys are generated in the tab, live in memory and `sessionStorage` only, and are swept back to your wallet when the round ends.
+- **The preview warning:** your wallet previews a Rollup trade against Solana, where the table is locked to the Rollup, so it may warn that the transaction could fail. That is expected; the app sends the trade to the Private ER, where it runs.
+- **The reveal:** you hold one seat and three bots fill the rest. A random or idle human breaks the reveal; following the hint keeps the close within 4.
+- **Evidence:** [docs/proof/wallet-round.md](docs/proof/wallet-round.md) records one devnet wallet-mode round on the TEE: 4 wallet popups (fund 1, join 1, sign-in 1, trades 1), one wallet trade on the Rollup, a signature delayed 8 s that still landed, about 0.033 SOL spent net of the sweep. The wallet there is a Wallet Standard mock backed by a keypair, driven from a Node script; it is not a session of a real browser wallet (Phantom, Solflare, Backpack or any other Wallet Standard wallet).
+- **Wallet compatibility (tested on devnet, 2026-11-27):** Solflare: connect, funding, join and sign-in work; Rollup trades are blocked by the wallet ("Network mismatch"). OKX: blocked at the first popup. Phantom: not tested yet (expected to warn but allow). Any Solana wallet is listed in the app, but trades may not work in every wallet. A closed or blocked popup shows an in-app message, and the bots finish the round.
+- **What is proven:** the one end-to-end proof is the mock-wallet round above ([docs/proof/wallet-round.md](docs/proof/wallet-round.md)) and the manual test's result block ([docs/gates/wallet-manual-test.md](docs/gates/wallet-manual-test.md)), where Solflare reached the Private ER round but could not sign a trade. No real browser wallet has completed a trade yet. The planned fix is a session-key variant, so the wallet signs once per round, not once per trade.
 
 ### The commit-reveal fallback
 

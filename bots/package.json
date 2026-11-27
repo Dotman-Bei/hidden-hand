@@ -6,7 +6,9 @@
   "exports": {
     ".": "./src/index.ts",
     "./policy": "./src/policy.ts",
-    "./sim": "./src/sim.ts"
+    "./sim": "./src/sim.ts",
+    "./house": "./src/house.ts",
+    "./wallet-proof": "./src/wallet-proof.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",
@@ -14,7 +16,9 @@
     "verify": "tsc --noEmit -p tsconfig.json && vitest run && tsx scripts/smoke.ts",
     "sim": "tsx scripts/sim-table.ts",
     "demo-round": "tsx scripts/demo-round.ts",
-    "check-proof": "tsx scripts/check-proof.ts"
+    "check-proof": "tsx scripts/check-proof.ts",
+    "wallet-round": "tsx scripts/wallet-round.ts",
+    "check-wallet-proof": "tsx scripts/check-wallet-proof.ts"
   },
   "dependencies": {
     "@coral-xyz/anchor": "0.32.1",
