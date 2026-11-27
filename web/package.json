@@ -7,17 +7,21 @@
     "sync-kit": "node scripts/sync-kit.mjs",
     "dev": "node scripts/sync-kit.mjs && vite",
     "build": "node scripts/sync-kit.mjs && tsc --noEmit -p tsconfig.json && vite build",
-    "test": "vitest run",
-    "verify": "tsc --noEmit -p tsconfig.json && vitest run"
+    "test": "vitest run --dir test",
+    "verify": "tsc --noEmit -p tsconfig.json && vitest run --dir test"
   },
   "dependencies": {
+    "@coral-xyz/anchor": "0.32.1",
     "@hidden-hand/bots": "workspace:*",
     "@hidden-hand/client": "workspace:*",
+    "@solana/web3.js": "^1.99.0",
+    "bn.js": "^5.2.1",
     "buffer": "^6.0.3",
     "react": "18.3.1",
     "react-dom": "18.3.1"
   },
   "devDependencies": {
+    "@types/bn.js": "^5.1.6",
     "@types/node": "^22.15.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
