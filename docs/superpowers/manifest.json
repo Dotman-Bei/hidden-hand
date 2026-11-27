@@ -371,7 +371,7 @@
       "commit": "feat(bots): demo-round runner with base-layer devnet proof",
       "human_gate": false,
       "allow_empty": false,
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "web:8",
