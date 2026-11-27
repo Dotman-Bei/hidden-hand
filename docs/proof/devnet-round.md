@@ -1,28 +1,28 @@
 # Devnet round proof
 
-- generated: 2026-11-27T02:52:54.545Z
+- generated: 2026-11-27T07:58:30.918Z
 - deal mode: tee
 - program: HZdoTuj1N8u1EBsVB6Bd6cgXDVnswb1cX1nFkX4miRFb ([explorer](https://explorer.solana.com/address/HZdoTuj1N8u1EBsVB6Bd6cgXDVnswb1cX1nFkX4miRFb?cluster=devnet))
-- table PDA: 37YgBHKVwFbpntjJBAKhihaPC2kAyVjUjxmHx4Krnj55
-- round id: 1795747852081
+- table PDA: FuDyDa6DqtdZoxfBHecVCWPPqxzjH465mCifPg5higsD
+- round id: 1795766197955
 - ER: https://devnet-tee.magicblock.app (validator MTEWGuqxUpYZGFJQcp8tLN7x5v9BSeoFHYWQQ3n3xzo)
 
 ## Base layer (Solana devnet)
 
 | step | signature | explorer |
 |---|---|---|
-| open_table | `52S2ya4USAUbivmipHF11me7yNyNvfYnRHjVyDe8Qb5kMKXfGGLLXBSy1LqWiRMct8ZnNNq5Mk9JJqmu76dYVBGg` | [explorer](https://explorer.solana.com/tx/52S2ya4USAUbivmipHF11me7yNyNvfYnRHjVyDe8Qb5kMKXfGGLLXBSy1LqWiRMct8ZnNNq5Mk9JJqmu76dYVBGg?cluster=devnet) |
-| join_table seat 0 | `3W6TxUPthPRTeowbcgQ9t28kxyqq23aeVFrx4h3d4dPCiBwnn35m4TQUB4TxveTmde7qsAo24draCgSEwjCp4vpf` | [explorer](https://explorer.solana.com/tx/3W6TxUPthPRTeowbcgQ9t28kxyqq23aeVFrx4h3d4dPCiBwnn35m4TQUB4TxveTmde7qsAo24draCgSEwjCp4vpf?cluster=devnet) |
-| join_table seat 1 | `5BoymnaepaP8k3trDnbZXDzk2EwqkHZYh5VStf67wCjqErkkA9zFTcHmT2BsLa3RwwR1rGBGCSc7Pgi7GPcgVNZj` | [explorer](https://explorer.solana.com/tx/5BoymnaepaP8k3trDnbZXDzk2EwqkHZYh5VStf67wCjqErkkA9zFTcHmT2BsLa3RwwR1rGBGCSc7Pgi7GPcgVNZj?cluster=devnet) |
-| join_table seat 2 | `jx4Ez7aFa4U4GQhadTs8ahpeKhzy3R4wz7CC2L83pzFMdYfqEFqYNSk2WDAMEpJteN9pqVUCz9dZYha34UP7ZjQ` | [explorer](https://explorer.solana.com/tx/jx4Ez7aFa4U4GQhadTs8ahpeKhzy3R4wz7CC2L83pzFMdYfqEFqYNSk2WDAMEpJteN9pqVUCz9dZYha34UP7ZjQ?cluster=devnet) |
-| join_table seat 3 | `5sFzTp2KV3CLjcUp6ju752V2VAKrjEMnzjW9BJFudU9vTrA1FMF3WFD6W5vTyCD595PRCyMGijq1y2j72H2TNTiD` | [explorer](https://explorer.solana.com/tx/5sFzTp2KV3CLjcUp6ju752V2VAKrjEMnzjW9BJFudU9vTrA1FMF3WFD6W5vTyCD595PRCyMGijq1y2j72H2TNTiD?cluster=devnet) |
-| delegate_pda table | `5VMXnwHmb2Huaujr8pHxwp2Ja4giDCGeR4TjKnrmkkYeC7wsrRSDVDsASaXrfmrtNegQSu1ZFPLT1b2hoFD5nUNj` | [explorer](https://explorer.solana.com/tx/5VMXnwHmb2Huaujr8pHxwp2Ja4giDCGeR4TjKnrmkkYeC7wsrRSDVDsASaXrfmrtNegQSu1ZFPLT1b2hoFD5nUNj?cluster=devnet) |
-| delegate_pda hand 0 | `5uurUmvr5NX4rEVVPAmH2UYTmQhVwxcKA1YJA4YadDCqZhLFYyimb3BsYJkGYGNjqYSiCh5sBN9yFjmN9wyKzHrd` | [explorer](https://explorer.solana.com/tx/5uurUmvr5NX4rEVVPAmH2UYTmQhVwxcKA1YJA4YadDCqZhLFYyimb3BsYJkGYGNjqYSiCh5sBN9yFjmN9wyKzHrd?cluster=devnet) |
-| delegate_pda hand 1 | `3jsCP6osxjRwrw1gZj22Qa2hQNxWuK3rmdijegs6enLM4XhE9aTPVtn1EYintFgMUXDBjQuQss55jBZwvTSGt5Dx` | [explorer](https://explorer.solana.com/tx/3jsCP6osxjRwrw1gZj22Qa2hQNxWuK3rmdijegs6enLM4XhE9aTPVtn1EYintFgMUXDBjQuQss55jBZwvTSGt5Dx?cluster=devnet) |
-| delegate_pda hand 2 | `4EwRfadBKSJSMk9QwTGC6j14ZWTGvGNXsGvk1Sj7deMa3DVX2iE5FL7dSFm4ShQGhcQci6QqKNh3Y51XuVmvnNrb` | [explorer](https://explorer.solana.com/tx/4EwRfadBKSJSMk9QwTGC6j14ZWTGvGNXsGvk1Sj7deMa3DVX2iE5FL7dSFm4ShQGhcQci6QqKNh3Y51XuVmvnNrb?cluster=devnet) |
-| delegate_pda hand 3 | `3XFPLWN8tYVWgbHxZ4425cCkvYzmgnFH8LzXvow1io6fKwc8m4zCwNAzMh3jHuqyR2iJXmDa7tQvjw1Zf5bbpBbn` | [explorer](https://explorer.solana.com/tx/3XFPLWN8tYVWgbHxZ4425cCkvYzmgnFH8LzXvow1io6fKwc8m4zCwNAzMh3jHuqyR2iJXmDa7tQvjw1Zf5bbpBbn?cluster=devnet) |
-| commit/undelegate (validator) | `4FoLve7cQwY7WRew4E3QN8Fx79zPKEtPf8mnqRtoRvei9QNQw8VcUpZ1BU4zbBGxiJUKfaS4eQqLfFhVKwUrfMXK` | [explorer](https://explorer.solana.com/tx/4FoLve7cQwY7WRew4E3QN8Fx79zPKEtPf8mnqRtoRvei9QNQw8VcUpZ1BU4zbBGxiJUKfaS4eQqLfFhVKwUrfMXK?cluster=devnet) |
-| claim_pot | `58yHnRX2pzpUyfVLmZUgs4t3yRoCa8AAybqZyPmhLzPacntLmPbpAiBe1reGYNktvh9poiqTKuomsCXpVKgUY3Qa` | [explorer](https://explorer.solana.com/tx/58yHnRX2pzpUyfVLmZUgs4t3yRoCa8AAybqZyPmhLzPacntLmPbpAiBe1reGYNktvh9poiqTKuomsCXpVKgUY3Qa?cluster=devnet) |
+| open_table | `3Xq8dz35d58hHrgN4wfNgrPPHaK7rn3tNVJevNXjSQiP9nwqpnDL5b7JrbZ5SCCd89hUr2PNaAFK7bAMV88Kc1ne` | [explorer](https://explorer.solana.com/tx/3Xq8dz35d58hHrgN4wfNgrPPHaK7rn3tNVJevNXjSQiP9nwqpnDL5b7JrbZ5SCCd89hUr2PNaAFK7bAMV88Kc1ne?cluster=devnet) |
+| join_table seat 0 | `26Yb5uiUranbwkNwq2uMi421GyrXZugyYAPC9fqBd1XkNFe9VXWgLYDfRzWh2jnjjifo8RJ4tp5zbW6E43KZ7SiF` | [explorer](https://explorer.solana.com/tx/26Yb5uiUranbwkNwq2uMi421GyrXZugyYAPC9fqBd1XkNFe9VXWgLYDfRzWh2jnjjifo8RJ4tp5zbW6E43KZ7SiF?cluster=devnet) |
+| join_table seat 1 | `5RLbqLNdRrwsChHNycNzB3s7xNE7jY6FhxuAkxfgSR2a6Dt4hmKSwwmVK6K6orkvfRA6b4XGXfqPyA3WPXXeX5Kj` | [explorer](https://explorer.solana.com/tx/5RLbqLNdRrwsChHNycNzB3s7xNE7jY6FhxuAkxfgSR2a6Dt4hmKSwwmVK6K6orkvfRA6b4XGXfqPyA3WPXXeX5Kj?cluster=devnet) |
+| join_table seat 2 | `5KNTcrwzfwxFzGkheSsrCg143y8QJrDJfAAeooHHbpFTymahDvGRaGXNwRDrHb8JSHBH7ybLpb9fQbwcSa5QVxKp` | [explorer](https://explorer.solana.com/tx/5KNTcrwzfwxFzGkheSsrCg143y8QJrDJfAAeooHHbpFTymahDvGRaGXNwRDrHb8JSHBH7ybLpb9fQbwcSa5QVxKp?cluster=devnet) |
+| join_table seat 3 | `26gT2N9TMeNEj6hYkb6ouULSTtci1VQqwiLTGQK1UFuapA8ipQBDv9FxWd9GF6EXMLzDY1vAHuwCWgzzD7Ano8TD` | [explorer](https://explorer.solana.com/tx/26gT2N9TMeNEj6hYkb6ouULSTtci1VQqwiLTGQK1UFuapA8ipQBDv9FxWd9GF6EXMLzDY1vAHuwCWgzzD7Ano8TD?cluster=devnet) |
+| delegate_pda table | `2qB2YVU4HuebT9voJH3P6zjxaCqSmdqfE8DGtXbQUX8n68MPdD2M1dH5suHx9VW5tuCGzz5yWjjrL9qvgHNpVhoA` | [explorer](https://explorer.solana.com/tx/2qB2YVU4HuebT9voJH3P6zjxaCqSmdqfE8DGtXbQUX8n68MPdD2M1dH5suHx9VW5tuCGzz5yWjjrL9qvgHNpVhoA?cluster=devnet) |
+| delegate_pda hand 0 | `5a19vofvfXsCrh3hm4AFY8p5QQq1UTLPoXYHkdamdV3nsJ87pn9QLqBegTyM3JK6971hyAbGszVSEY6VWNtgcBh1` | [explorer](https://explorer.solana.com/tx/5a19vofvfXsCrh3hm4AFY8p5QQq1UTLPoXYHkdamdV3nsJ87pn9QLqBegTyM3JK6971hyAbGszVSEY6VWNtgcBh1?cluster=devnet) |
+| delegate_pda hand 1 | `5C2RazYLDu4H8R4Jvqam8Rk3nMV3jrooQjncJxRCjfa8bJMqEScfqj7JQqWC1UvQCERkXBS1Xq795TrJUMHiFpcz` | [explorer](https://explorer.solana.com/tx/5C2RazYLDu4H8R4Jvqam8Rk3nMV3jrooQjncJxRCjfa8bJMqEScfqj7JQqWC1UvQCERkXBS1Xq795TrJUMHiFpcz?cluster=devnet) |
+| delegate_pda hand 2 | `5w727ERMoaS95NybXWg4KiB3bFwBtxtuKPy5TPa1fNCCMKBCvM3jfU72aonWsJGxJKBsFB2tDMkrh5kzwwuJKBWp` | [explorer](https://explorer.solana.com/tx/5w727ERMoaS95NybXWg4KiB3bFwBtxtuKPy5TPa1fNCCMKBCvM3jfU72aonWsJGxJKBsFB2tDMkrh5kzwwuJKBWp?cluster=devnet) |
+| delegate_pda hand 3 | `2JEW1HMH1BZNw6HRNt4i9MKUjjQJaJqXXowB4cuL2HFb71cCHwFifs2NAoc8ZMebPF6ad6DdbEzHgm2uH58coE7U` | [explorer](https://explorer.solana.com/tx/2JEW1HMH1BZNw6HRNt4i9MKUjjQJaJqXXowB4cuL2HFb71cCHwFifs2NAoc8ZMebPF6ad6DdbEzHgm2uH58coE7U?cluster=devnet) |
+| commit/undelegate (validator) | `JuLfuPw7nQwj8nVoXXKF6GNywD5sX9crPhPTkRoXLLc2M2Dg7FKNTMyxWhWiXg8FaBq3N9Qs137onpKBQm48a4s` | [explorer](https://explorer.solana.com/tx/JuLfuPw7nQwj8nVoXXKF6GNywD5sX9crPhPTkRoXLLc2M2Dg7FKNTMyxWhWiXg8FaBq3N9Qs137onpKBQm48a4s?cluster=devnet) |
+| claim_pot | `4CgZLMsgC1nqbwHLeLrhFibfRtS2YrKuZEQcExkv1dsgEi5s3tpYHotqohPnysSw32YYxSXeGJJ2aqcJSKbo6Q4z` | [explorer](https://explorer.solana.com/tx/4CgZLMsgC1nqbwHLeLrhFibfRtS2YrKuZEQcExkv1dsgEi5s3tpYHotqohPnysSw32YYxSXeGJJ2aqcJSKbo6Q4z?cluster=devnet) |
 
 ## Ephemeral Rollup
 
@@ -30,18 +30,18 @@ ER signatures are read through the ER RPC above (the TEE needs an auth token; no
 
 | step | signature |
 |---|---|
-| permissions / setup | `3KNSb5zUFJNXcQ3rtLXcLNbpdv5rpbrda687DJnMEctpKPYVFnGmbNwKW4xgE9nqaGEAuotCqaDnNdf4dKT3WHsC` |
-| request_deal (VRF) | `5e6KKKZ98xFMUWdsWNEFnFMtGaq74p5fuBSDvipoRTcLVthWT6ozez2Tw17XNvK8zN1t7J5XuVBNaSkJPoxkC5F2` |
-| trades | 12 trades; first `3Bb8YNkPU3mj78QZtSDq6XTd8LNYMEUADYRRg3GaM6pX7dsDBRD9Zn37TaFAYARXfcNjDDQzeiCtWPeJhoHJWAWX` |
-| reveal | `2csNTGJq7WqkDjezPxZvn7qjH51CoAXco3hPXotyqSGEw6r993CuQitfUPuisGPZHQ7KuKuSyN4cUdGaZMWXoW8j` |
-| settle_round | `U6cy81YHtgVu7TJbz9Yb4zjyTnLDLYcNcxBG5wjkQ7wHbYQRangA5paVtb1Waa3GyMhehTMXtW1QWJceNxdGqob` |
+| permissions / setup | `48kwcqGie7q2KB3m9VQS1qSVRCHDLNxFRjVjhtuhpTCfqfXkxA8YQwwpEupmLBtj2gkEz1YzjRbU3cthc7PDEKm7` |
+| request_deal (VRF) | `21dCTabFXWzyVAXPpSjPVupUVP3Go5YiHG241N37T2LGnexYeR5BFsAwD4DwQCqN7BGVJyEpERKzqXZkDKfEXfyy` |
+| trades | 23 trades; first `2Bt9v5iCnJNASSojmh7z8Q1QYRkpKrHVyoVdFwj91jd287AdA9aq1uR5vsALQm4Mv5teST2u7pbeeATwZHuoSNDJ` |
+| reveal | `2XbAkHVL3L4iuSLSjZVWvbgtggeSGiv68Zq48RZ6FtqpVJhVf6qbzJugwcLCVVGzs9WXPW1qY2R9pbLTmakVtukT` |
+| settle_round | `5xz7T32gDRCy3Z5qNK1iXG9HvLrVko2gGiVNNszAUdcJUZwMfwgvKokoH5Q9e1LhRbruuCHPQAomrmubKYbKS7KS` |
 
 ## Result
 
-- hidden sum: 65
-- close: 64.00 (|close − sum| = 1.00)
-- cards: 13, 1, 11, 4, 11, 10, 5, 10
-- winner: seat 2 (HoQN1wbD8T48fBfWywsJVW6rkrG8Cq4wchRz6AWq5qeb), pot 0.040 SOL
-- P&L (points): -3.50, -5.00, 10.50, -2.00
+- hidden sum: 34
+- close: 33.00 (|close − sum| = 1.00)
+- cards: 3, 5, 6, 7, 4, 2, 1, 6
+- winner: seat 0 (6K7EC5SzgnbTomshUoPWKSTnuktVxJgWZgHiRArZkxnb), pot 0.040 SOL
+- P&L (points): 148.50, 25.00, 129.00, 147.00
 
-Explorer link for the submission form (a base-layer delegation of our program): https://explorer.solana.com/tx/5VMXnwHmb2Huaujr8pHxwp2Ja4giDCGeR4TjKnrmkkYeC7wsrRSDVDsASaXrfmrtNegQSu1ZFPLT1b2hoFD5nUNj?cluster=devnet
+Explorer link for the submission form (a base-layer delegation of our program): https://explorer.solana.com/tx/2qB2YVU4HuebT9voJH3P6zjxaCqSmdqfE8DGtXbQUX8n68MPdD2M1dH5suHx9VW5tuCGzz5yWjjrL9qvgHNpVhoA?cluster=devnet
