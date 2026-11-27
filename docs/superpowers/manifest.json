@@ -876,7 +876,7 @@
       "commit": "feat(program): commit-reveal fallback deal (callback_deal_cr, reveal_secret)",
       "human_gate": false,
       "allow_empty": false,
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "client:21",
@@ -921,7 +921,7 @@
       "commit": "feat(client): commit-reveal deal adapter and fallback default mode",
       "human_gate": false,
       "allow_empty": false,
-      "status": "pending"
+      "status": "done"
     }
   ]
 }
