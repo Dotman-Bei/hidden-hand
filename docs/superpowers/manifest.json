@@ -520,7 +520,7 @@
       "commit": "docs: README (R1-web-app v1) and MIT license",
       "human_gate": false,
       "allow_empty": false,
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "gates:11",
