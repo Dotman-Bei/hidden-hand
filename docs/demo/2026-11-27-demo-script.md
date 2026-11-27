@@ -108,6 +108,7 @@ Upload hold: the repo is private. No upload until the user confirms it is public
 | audio present, loudness sane | all | pass | render 2: −14.12 LUFS, −1.35 dBTP; not listened to by ear (the seat cannot hear audio) |
 | total duration within ±10% | all | pass | render 2: 126.1 s |
 | money shot visible | outro | pass | outro QR: 841 of 841 modules match the repo URL; logged-out GET returns 404 while the repo is private (upload hold stands) |
+| money shot visible | outro | pass | pre-upload 08:41Z: repo public; the QR in the final file matches the URL (841/841 modules) and the URL returns 200 logged-out; file checksum unchanged since QC |
 
 ## 7 — Publish block
 
@@ -133,3 +134,4 @@ Upload hold: the repo is private. No upload until the user confirms it is public
 | 2026-11-27 | recorded (8/8 scenes) | demo-studio |
 | 2026-11-27 | assembled | demo-studio |
 | 2026-11-27 | QC passed [residuals: narration pronunciation not checked by ear; the S1 landing text says 90-second while the recorded demo-mode round is 75 s; the S3 quote shows the spike run's cards, not this round's; the S7 close-up shows the Trade log without the program id; true peak −1.35 dBTP against a −1.5 target; the outro repo link is 404 logged-out until gates:18] | demo-studio |
+| 2026-11-27 | watched | the user |
