@@ -10,6 +10,7 @@ import { REPO_ROOT, loadBurner } from "@hidden-hand/client/node";
 import { type Keypair, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { DEMO_SEED, type BotMemory, decide, mulberry32, personaFor } from "./policy";
 import { type ProofData, formatProof } from "./proof";
+import { retryStaleProgram } from "./retry";
 
 export interface RunOptions { demo: boolean; proof: boolean; seat4: PublicKey | null; durationSecs: number; mode: DealMode; joinWindowSecs: number }
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -54,7 +55,9 @@ export async function runDemoRound(o: RunOptions): Promise<ProofData> {
   const setup = await adapter.afterDelegate(ctx);
 
   const erBurner = makeProgram(await adapter.erConnection(burner), burner);
-  const dealSig = await requestDeal(erBurner, burner, table, Math.floor(rng() * 256));
+  const clientSeed = Math.floor(rng() * 256);
+  // Right after a program upgrade the ER may still run the old build (ModeNotSupported / unknown instruction): wait it out.
+  const dealSig = await retryStaleProgram(() => requestDeal(erBurner, burner, table, clientSeed), { log });
   let view: TableView = await waitForPhase(erBurner, table, "trading", 45_000);
   log(`dealt; trading until ${new Date(view.endTs * 1000).toISOString()}`);
 

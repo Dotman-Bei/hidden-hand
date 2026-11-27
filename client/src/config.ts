@@ -2,7 +2,18 @@ import { PublicKey } from "@solana/web3.js";
 import idl from "./idl/hidden_hand.json";
 
 export type DealMode = "tee" | "commit-reveal";
-export const DEFAULT_DEAL_MODE: DealMode = "commit-reveal";
+
+/** "tee" | "commit-reveal" (surrounding whitespace ignored); anything else, or nothing, is the Private ER ("tee"). */
+export function resolveDealMode(raw: string | undefined): DealMode {
+  const v = raw?.trim();
+  return v === "commit-reveal" ? "commit-reveal" : "tee";
+}
+
+/** Read via globalThis so the browser bundle (no `process`) compiles and gets "tee". */
+const envDealMode = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env?.HH_DEAL_MODE;
+
+/** The Private ER (TEE) deal by default; HH_DEAL_MODE=commit-reveal switches it; a CLI `--mode` wins over both. */
+export const DEFAULT_DEAL_MODE: DealMode = resolveDealMode(envDealMode);
 
 export const PROGRAM_ID = new PublicKey(idl.address);
 export const BASE_RPC = "https://api.devnet.solana.com";

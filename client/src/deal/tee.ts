@@ -1,4 +1,4 @@
-import type { IdlAccounts } from "@coral-xyz/anchor";
+import type { Coder, IdlAccounts } from "@coral-xyz/anchor";
 import { MAGIC_PROGRAM_ID, PERMISSION_PROGRAM_ID, permissionPdaFromAccount } from "@magicblock-labs/ephemeral-rollups-sdk";
 import type { AccountInfo, Commitment, Connection, Keypair, PublicKey } from "@solana/web3.js";
 import { EPHEMERAL_VAULT_ID, TEE_RPC, TEE_VALIDATOR } from "../config";
@@ -12,6 +12,17 @@ import { isReadable, pollReadable, waitUntilReadable } from "./readable";
 import type { DealAdapter, DealContext } from "./types";
 
 type HandAccount = IdlAccounts<HiddenHand>["hand"];
+/**
+ * The name the Program's accounts coder knows the Hand account by. `new Program` camelCases the IDL, so the coder
+ * registers "hand", not the IDL JSON's "Hand" (decoding by "Hand" throws "Account not found: Hand"). Typed against
+ * the IDL's account keys so a rename fails to compile.
+ */
+export const HAND_ACCOUNT = "hand" satisfies keyof IdlAccounts<HiddenHand>;
+
+/** Decode raw Hand account data (discriminator checked) with a Program's coder. */
+export function decodeHand(coder: Coder, data: Buffer): HandAccount {
+  return coder.accounts.decode<HandAccount>(HAND_ACCOUNT, data);
+}
 export const READABLE_TIMEOUT_MS = 20_000;
 export const READABLE_EVERY_MS = 400;
 
@@ -86,7 +97,7 @@ export class TeeDealAdapter implements DealAdapter {
     const readAt = async (commitment: Commitment): Promise<AccountInfo<Buffer> | null> => {
       const i = await program.provider.connection.getAccountInfo(address, commitment);
       if (!isReadable(i)) return null;
-      const hand = program.coder.accounts.decode<HandAccount>("Hand", i.data);
+      const hand = decodeHand(program.coder, i.data);
       if (!hand.dealt) return null;
       got.hand = hand;
       return i;

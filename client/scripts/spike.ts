@@ -5,7 +5,7 @@ import { type AccountInfo, type Commitment, type Connection, type Keypair, LAMPO
 import BN from "bn.js";
 import { AS_RPC, AS_VALIDATOR, HAND_SEED, PROGRAM_ID, TEE_RPC, TEE_VALIDATOR } from "../src/config";
 import { baseConnection, publicErConnection, teeConnection } from "../src/conn";
-import { TeeDealAdapter } from "../src/deal/tee";
+import { TeeDealAdapter, decodeHand } from "../src/deal/tee";
 import type { DealContext } from "../src/deal/types";
 import { deriveBotKeypair } from "../src/keys";
 import { REPO_ROOT, loadBurner } from "../src/node";
@@ -94,7 +94,7 @@ async function probe(r: Reader, account: PublicKey, commitment: Commitment, asHa
   if (!asHand || info === null) return describeAccountRead(info);
   let dealt: boolean | "undecodable";
   try {
-    dealt = makeProgram(r.conn, r.kp).coder.accounts.decode<{ dealt: boolean }>("Hand", info.data).dealt;
+    dealt = decodeHand(makeProgram(r.conn, r.kp).coder, info.data).dealt;
   } catch {
     dealt = "undecodable";
   }
@@ -112,7 +112,7 @@ async function handDump(r: Reader, hand: PublicKey): Promise<string[]> {
   if (info === null) return handDataLines(r.name, null, null);
   let decodeError: unknown = null;
   try {
-    makeProgram(r.conn, r.kp).coder.accounts.decode<{ dealt: boolean }>("Hand", info.data);
+    decodeHand(makeProgram(r.conn, r.kp).coder, info.data);
   } catch (e) {
     decodeError = e;
   }
