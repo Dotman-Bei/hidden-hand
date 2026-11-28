@@ -5,6 +5,7 @@ import { URL as NodeURL, fileURLToPath } from "node:url";
 import { Keypair } from "@solana/web3.js";
 import { act, cleanup, fireEvent, render, renderHook, screen, within } from "@testing-library/react";
 import { getWallets } from "@wallet-standard/app";
+import { useLayoutEffect } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { mockStandardWallet } from "@hidden-hand/client";
 import { useFooterAction } from "../src/app/wallet/useFooterAction";
@@ -38,6 +39,11 @@ function boot() {
 
 const footer = () => document.querySelector<HTMLElement>("#contact .closing__cta .btn") as HTMLElement;
 const inFooter = () => document.querySelectorAll("#contact .closing__cta .btn");
+const heading = () => document.getElementById("close-h")?.textContent;
+const lead = () => document.querySelector("#close-h + p")?.textContent;
+const HEADING = "Play a round with your wallet";
+const LEAD_OFF = "Connect a devnet wallet and take a seat; three bots take the rest.";
+const LEAD_ON = "Your wallet is connected. Take your seat; three bots take the rest.";
 
 async function pick() {
   const dialog = screen.getByRole("dialog", { name: MODAL_TITLE });
@@ -84,6 +90,51 @@ describe("the wallet strip", () => {
     await disconnectFromNav();
     expect(screen.queryByRole("region", { name: "Your wallet" })).toBeNull();
     expect(screen.queryByText("Disconnect")).toBeNull();
+  });
+});
+
+describe("the closing section's lead", () => {
+  it("asks to connect until a wallet connects, then says it is connected, and back; the heading stays", async () => {
+    boot();
+    expect(heading()).toBe(HEADING);
+    expect(lead()).toBe(LEAD_OFF);
+
+    fireEvent.click(footer());
+    await pick();
+    expect(lead()).toBe(LEAD_ON);
+    expect(footer().textContent).toBe("Open the pit");
+    expect(heading()).toBe(HEADING);
+
+    await disconnectFromNav();
+    expect(lead()).toBe(LEAD_OFF);
+    expect(footer().textContent).toBe("Connect wallet");
+    expect(heading()).toBe(HEADING);
+  });
+
+  it("changes in the same commit as the button, before paint", () => {
+    document.body.innerHTML = `<footer id="contact"><div class="closing__cta"><h2 id="close-h">${HEADING}</h2><p>${LEAD_OFF}</p><button class="btn btn--primary" data-wallet-connect>Connect wallet</button></div></footer>`;
+    const seen: [string | null | undefined, string | null | undefined][] = [];
+    // a sibling layout effect runs after the hook's own and before the browser can paint
+    const { rerender } = renderHook(
+      ({ connected }) => {
+        useFooterAction(connected);
+        useLayoutEffect(() => {
+          seen.push([lead(), footer().textContent]);
+        }, [connected]);
+      },
+      { initialProps: { connected: false } },
+    );
+    rerender({ connected: true });
+    rerender({ connected: false });
+    expect(seen).toEqual([[LEAD_OFF, "Connect wallet"], [LEAD_ON, "Open the pit"], [LEAD_OFF, "Connect wallet"]]);
+  });
+
+  it("is left alone in Express mode's markup, which has no wallet button", () => {
+    const express = "One command opens a devnet round and seats the bots.";
+    document.body.innerHTML = `<footer id="contact"><div class="closing__cta"><h2 id="close-h">Start a round of your own</h2><p>${express}</p><button class="btn btn--primary copy">Copy the demo command</button></div></footer>`;
+    renderHook(() => useFooterAction(true));
+    expect(lead()).toBe(express);
+    expect(footer().textContent).toBe("Copy the demo command");
   });
 });
 

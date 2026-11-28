@@ -79,7 +79,7 @@ export function WalletApp() {
     setPicking(true);
   }, []);
   // the footer's static button (the inline script marks it data-wallet-connect in wallet mode); once a wallet
-  // is connected a link to the pit stands there instead
+  // is connected a link to the pit stands there instead, and the lead beside it says the wallet is connected
   useFooterAction(wallet.address !== null);
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
