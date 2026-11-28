@@ -67,7 +67,7 @@ export const WALLET_CLOSED = "You closed the popup. No trade was sent.";
 export const WALLET_BLOCKED =
   "Your wallet blocked this transaction. Rollup trades use the Private ER's own blockhash, which some wallets (tested: Solflare blocks it, OKX refuses the first popup) treat as mainnet. Phantom is the recommended wallet; or open Express mode.";
 export const WALLET_COMPAT =
-  "Tested on devnet: Solflare: connect, funding, join and sign-in work; Rollup trades are blocked by the wallet. OKX: blocked at the first popup. Phantom: not tested yet (expected to warn but allow). Any Solana wallet is listed, but trades may not work in every wallet.";
+  "Tested on devnet: Solflare: connect, funding, join and sign-in work; Rollup trades are blocked by the wallet. OKX: blocked at the first popup. Phantom: full round works on devnet (connect, funding, join, sign-in, Rollup trades, reveal). Any Solana wallet is listed, but trades may not work in every wallet.";
 const BLOCKED_RE = /mainnet|network mismatch|insufficient balance for network fee|not supported|rejected|did not answer/i;
 
 /** A user Reject reads as closed; a network/blocked error as blocked; anything else keeps its own text. */

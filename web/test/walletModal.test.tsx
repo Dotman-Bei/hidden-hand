@@ -156,7 +156,8 @@ describe("the connect modal", () => {
     const text = dialog.querySelector(".wallet-modal__facts")?.textContent ?? "";
     expect(text).toContain("Solflare: connect, funding, join and sign-in work; Rollup trades are blocked by the wallet.");
     expect(text).toContain("OKX: blocked at the first popup.");
-    expect(text).toContain("Phantom: not tested yet.");
+    expect(text).toContain("Phantom: full round works on devnet (connect, funding, join, sign-in, Rollup trades, reveal).");
+    expect(text).not.toContain("not tested");
     expect(COMPAT_LINES).toHaveLength(3);
   });
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { playMode } from "../src/app/wallet/route";
-import { WALLET_BLOCKED, WALLET_CLOSED, deriveWalletUi, walletErrorText, type WalletUiInput } from "../src/app/wallet/walletStates";
+import { WALLET_BLOCKED, WALLET_CLOSED, WALLET_COMPAT, deriveWalletUi, walletErrorText, type WalletUiInput } from "../src/app/wallet/walletStates";
 
 const base: WalletUiInput = { connected: false, wallets: [], balance: null, needLamports: null, phase: null, endTs: null, nowMs: 1_000_000, error: null };
 
@@ -43,6 +43,13 @@ describe("deriveWalletUi", () => {
   });
   it("an error wins and is retryable", () => {
     expect(deriveWalletUi({ ...base, connected: true, phase: "error", error: "boom" })).toEqual({ kind: "error", message: "boom", retryable: true });
+  });
+});
+
+describe("WALLET_COMPAT", () => {
+  it("carries the tested Phantom line, as recorded in docs/gates/wallet-manual-test.md", () => {
+    expect(WALLET_COMPAT).toContain("Phantom: full round works on devnet (connect, funding, join, sign-in, Rollup trades, reveal).");
+    expect(WALLET_COMPAT).not.toContain("not tested");
   });
 });
 

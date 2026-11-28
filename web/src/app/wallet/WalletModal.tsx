@@ -21,7 +21,7 @@ export const INSTALL_LINKS: readonly { name: string; href: string }[] = [
 export const COMPAT_LINES: readonly { wallet: string; text: string }[] = [
   { wallet: "Solflare", text: "connect, funding, join and sign-in work; Rollup trades are blocked by the wallet." },
   { wallet: "OKX", text: "blocked at the first popup." },
-  { wallet: "Phantom", text: "not tested yet." },
+  { wallet: "Phantom", text: "full round works on devnet (connect, funding, join, sign-in, Rollup trades, reveal)." },
 ];
 
 const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
