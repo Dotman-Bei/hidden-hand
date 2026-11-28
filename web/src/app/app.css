@@ -111,12 +111,6 @@
 .wallet-strip__row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-5); min-height: 44px; }
 .wallet-strip__id { display: inline-flex; gap: var(--s-2); font-weight: 500; margin-right: auto; }
 .wallet-strip__mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
-.wallet-strip__link {
-  min-height: 44px; padding: 0; border: 0; background: none; color: var(--p-ink); font: 500 var(--t-small)/1 var(--font-text); cursor: pointer;
-  text-decoration: underline; text-underline-offset: 4px; text-decoration-color: color-mix(in oklab, var(--p-ink) 35%, transparent);
-  transition: text-decoration-color var(--dur, 160ms) var(--ease, ease);
-}
-@media (hover: hover) and (pointer: fine) { .wallet-strip__link:hover { text-decoration-color: currentColor; } }
 .wallet-strip .btn { width: auto; }
 .wallet-connect { display: grid; gap: var(--s-3); width: 100%; }
 .wallet-connect__text, .wallet-connect__act { display: flex; flex-direction: column; align-items: flex-start; gap: var(--s-3); min-width: 0; }

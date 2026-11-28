@@ -29,7 +29,6 @@ function Strip({ w }: { w: WalletApi }) {
         {ui.kind === "trading" && (
           <span className="wallet-strip__mono" role="timer" aria-label="Round clock">{clock(ui.secondsLeft)}</span>
         )}
-        <button type="button" className="wallet-strip__link" onClick={w.disconnect}>Disconnect</button>
       </div>
       {ui.kind === "trading" && (
         <p className="desk-note">

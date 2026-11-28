@@ -67,6 +67,26 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
+describe("the wallet strip", () => {
+  it("shows the name, the address, the balance and the popup count, with no Disconnect of its own", async () => {
+    boot();
+    fireEvent.click(footer());
+    await pick();
+    const strip = screen.getByRole("region", { name: "Your wallet" });
+    expect(within(strip).getByText("Mock Wallet")).toBeTruthy();
+    expect(within(strip).getByText(short)).toBeTruthy();
+    expect(within(strip).getByText("1.23 SOL")).toBeTruthy();
+    expect(within(strip).getByText("Popups signed: 0")).toBeTruthy();
+    expect(within(strip).queryByRole("button")).toBeNull();
+    expect(strip.textContent).not.toContain("Disconnect");
+
+    // the one Disconnect left is the nav account menu's, and it still takes the strip down
+    await disconnectFromNav();
+    expect(screen.queryByRole("region", { name: "Your wallet" })).toBeNull();
+    expect(screen.queryByText("Disconnect")).toBeNull();
+  });
+});
+
 describe("the closing section's button in wallet mode", () => {
   it("is Connect wallet until a wallet connects, then a link to the pit with the focus, and back again", async () => {
     boot();
