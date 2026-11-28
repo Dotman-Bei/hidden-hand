@@ -94,11 +94,14 @@
 .desk-seat__pos { display: grid; justify-items: end; font: 400 13px/1.2 var(--font-mono); color: var(--p-muted); text-align: right; font-variant-numeric: tabular-nums; }
 .desk-seat__pos small { font-size: 13px; color: var(--p-ink); }
 .desk__tape { display: flex; flex-direction: column; gap: var(--s-1); flex: 1 1 0; min-height: 0; padding-top: var(--s-2); border-top: 1px solid var(--desk-line); }
-.desk__tape-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-1); overflow-y: auto; min-height: 0; }
-.desk__tape-list li { display: flex; justify-content: space-between; gap: var(--s-3); font: 400 13px/1.35 var(--font-mono); color: var(--p-muted); white-space: nowrap; }
+/* a row keeps to the tape's width: where the trade and its "#N · time" do not fit one line (a narrow phone), the
+   time takes a second line at the right edge, so the price is never cut. The time sits on the trade's baseline, also
+   beside your own trade's link, which is 44px tall on a phone */
+.desk__tape-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-1); overflow-y: auto; min-height: 0; }
+.desk__tape-list li { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; column-gap: var(--s-3); font: 400 13px/1.35 var(--font-mono); color: var(--p-muted); white-space: nowrap; }
 .desk__tape-list li:first-child { color: var(--p-ink); }
 .desk__tape-list li > :first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-.desk__tape-time { flex: none; font-variant-numeric: tabular-nums; }
+.desk__tape-time { flex: none; margin-left: auto; font-variant-numeric: tabular-nums; }
 .desk__tape-empty { margin: 0; font: 400 13px/1.35 var(--font-mono); color: var(--p-muted); }
 
 /* wallet mode: the wallet strip over the desk (same window look) and the detected wallets in the connect panel */

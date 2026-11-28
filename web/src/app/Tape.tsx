@@ -46,7 +46,7 @@ export function Tape({ r }: { r: RoundApi }) {
                 ) : (
                   <span>{text}</span>
                 )}
-                <span className="desk__tape-time">{sig ? stamp(v ? t.ts - v.startTs : 0) : `#${t.index + 1} · ${stamp(v ? t.ts - v.startTs : 0)}`}</span>
+                <span className="desk__tape-time">{`#${t.index + 1} · ${stamp(v ? t.ts - v.startTs : 0)}`}</span>
               </li>
             );
           })}
