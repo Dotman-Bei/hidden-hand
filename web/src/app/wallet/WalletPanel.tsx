@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { CONNECT_LABEL } from "./AccountControl";
 import type { WalletApi } from "./useWalletRound";
 import { WALLET_COMPAT } from "./walletStates";
 
@@ -14,13 +15,8 @@ function Step({ title, text }: { title: string; text?: string }) {
   );
 }
 
-function Connect({ w }: { w: WalletApi }) {
-  const [asked, setAsked] = useState(false);
-  const first = w.wallets[0];
-  const onConnect = () => {
-    if (first) void w.connect(first.name);
-    else setAsked(true);
-  };
+/** The first wallet screen: one button that opens the connect modal, and the way to Express mode. */
+function Connect({ onConnect }: { onConnect(opener: HTMLElement): void }) {
   return (
     <div className="wallet-connect">
       <div className="wallet-connect__text">
@@ -28,26 +24,11 @@ function Connect({ w }: { w: WalletApi }) {
         <p className="desk-panel__text">Connect any Solana wallet (for example Phantom, Solflare, Backpack, OKX or MetaMask) on devnet. You hold one seat; three bots hold the others.</p>
       </div>
       <div className="wallet-connect__act">
-      {w.wallets.length > 0 && (
-        <ul className="wallet-list" aria-label="Wallets in this browser">
-          {w.wallets.map((x) => (
-            <li key={x.name}>
-              <button type="button" className="btn btn--secondary wallet-list__btn" onClick={() => void w.connect(x.name)}>
-                <img src={x.icon} alt="" width={20} height={20} />
-                {`Connect ${x.name}`}
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-      <div className="btn-row">
-        <button type="button" className="btn btn--primary" onClick={onConnect}>Connect a wallet</button>
-        <a className="btn btn--secondary" href={EXPRESS_HREF}>Express mode (no wallet)</a>
-      </div>
-      {asked && w.wallets.length === 0 && (
-        <p className="desk-note" role="alert">No Solana wallet found in this browser. Install any Solana wallet (for example Phantom, Solflare, Backpack, OKX or MetaMask), switch it to devnet, and reload.</p>
-      )}
-      <p className="desk-note">The price only finds the hidden sum when every seat trades its hand. A random or idle human breaks the reveal, so follow the hint.</p>
+        <div className="btn-row">
+          <button type="button" className="btn btn--primary" onClick={(e) => onConnect(e.currentTarget)}>{CONNECT_LABEL}</button>
+          <a className="btn btn--secondary" href={EXPRESS_HREF}>Express mode (no wallet)</a>
+        </div>
+        <p className="desk-note">The price only finds the hidden sum when every seat trades its hand. A random or idle human breaks the reveal, so follow the hint.</p>
       </div>
     </div>
   );
@@ -77,11 +58,11 @@ function Ready({ w, need }: { w: WalletApi; need: number }) {
 }
 
 /** One panel per non-trading wallet state, shown in the desk's panel slot; trading, bell and settled use the desk's own. */
-export function WalletPanel({ w }: { w: WalletApi }) {
+export function WalletPanel({ w, onConnect }: { w: WalletApi; onConnect(opener: HTMLElement): void }) {
   const ui = w.ui;
   switch (ui.kind) {
     case "connect":
-      return <Connect w={w} />;
+      return <Connect onConnect={onConnect} />;
     case "checking":
       return <Step title="Reading your devnet balance…" />;
     case "insufficient":

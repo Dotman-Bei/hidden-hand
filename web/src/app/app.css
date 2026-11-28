@@ -131,13 +131,83 @@
   /* nothing is dealt before a wallet connects: the four open seats keep their names, not their face-down cards */
   .desk:has(.wallet-connect) .desk-seat__cards { display: none; }
 }
-.wallet-list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--s-2); }
-.wallet-list__btn { display: inline-flex; align-items: center; gap: var(--s-2); }
-.wallet-list__btn img { width: 20px; height: 20px; flex: none; }
 @media (max-width: 639px) {
   .wallet-strip { padding: var(--s-2) var(--s-3); }
-  .wallet-strip .btn, .wallet-list, .wallet-list li, .wallet-list__btn { width: 100%; }
-  .wallet-list__btn { justify-content: center; }
+  .wallet-strip .btn { width: 100%; }
+}
+
+/* the connect modal: a flat 40% dim (no blur), one window in the desk's look, the detected wallets as rows */
+html.wallet-modal-open, html.wallet-modal-open body { overflow: hidden; }
+.wallet-modal {
+  position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: var(--s-4);
+  background: rgb(0 0 0 / .4);
+  animation: wm-fade var(--m-panel, 200ms) var(--ease, ease) both;
+}
+.wallet-modal__panel {
+  --desk-line: color-mix(in oklab, var(--p-ink) 13%, transparent);
+  --desk-fill: color-mix(in oklab, var(--p-ink) 9%, var(--p-bg));
+  --ink: var(--p-ink); --muted: var(--p-muted); --bg: var(--p-bg);
+  width: min(100%, 480px); max-height: calc(100svh - 2 * var(--s-4)); overflow-y: auto;
+  display: grid; gap: var(--s-4); padding: var(--s-5);
+  background: var(--p-bg); color: var(--p-ink); border: 1px solid var(--desk-line); border-radius: var(--r-lg);
+  box-shadow: 0 24px 48px -24px rgb(0 0 0 / .55);
+  font: 400 var(--t-body)/1.5 var(--font-text); text-align: left;
+  animation: wm-drop var(--m-panel, 200ms) var(--ease, ease) both;
+}
+.wallet-modal__head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-4); }
+.wallet-modal__title { margin: 0; font: 500 var(--t-card)/1.25 var(--font-display); letter-spacing: -0.01em; }
+.wallet-modal__close {
+  flex: none; display: inline-grid; place-items: center; width: 44px; height: 44px; margin: calc(-1 * var(--s-2)) calc(-1 * var(--s-2)) 0 0;
+  border: 1px solid var(--desk-line); border-radius: var(--r-btn); background: transparent; color: var(--p-ink); cursor: pointer;
+  transition: background-color var(--m-in, 150ms) var(--ease, ease);
+}
+@media (hover: hover) and (pointer: fine) { .wallet-modal__close:hover { background: var(--desk-fill); } }
+.wallet-modal__text { margin: 0; color: var(--p-ink); }
+.wallet-modal__list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-2); }
+.wallet-modal .wallet-option { display: flex; align-items: center; justify-content: flex-start; gap: var(--s-3); width: 100%; height: auto; min-height: 56px; padding-inline: var(--s-4); text-align: left; }
+.wallet-option__icon { width: 28px; height: 28px; flex: none; border-radius: var(--r-sm); }
+.wallet-option__name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+.wallet-option__tag { margin-left: auto; flex: none; padding: var(--s-1) var(--s-2); border-radius: var(--r-sm); background: var(--p-bg); color: var(--p-ink); font: 500 13px/1.2 var(--font-text); }
+.wallet-option[aria-disabled="true"] { opacity: .6; cursor: progress; }
+.wallet-modal__status { margin: 0; min-height: 1.4em; font-size: var(--t-small); line-height: 1.4; color: var(--p-muted); }
+.wallet-modal__status:empty { display: none; }
+.wallet-modal__status[data-error] { color: var(--p-ink); }
+.wallet-modal__facts { display: grid; gap: var(--s-2); padding-top: var(--s-4); border-top: 1px solid var(--desk-line); }
+.wallet-modal__label { margin: 0; font: 500 13px/1.2 var(--font-text); color: var(--p-muted); }
+.wallet-modal__facts ul { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-1); font-size: var(--t-small); line-height: 1.4; color: var(--p-muted); }
+.wallet-modal__wallet { color: var(--p-ink); font-weight: 500; }
+@keyframes wm-fade { from { opacity: 0; } }
+@keyframes wm-drop { from { opacity: 0; transform: translateY(-6px); } }
+@media (prefers-reduced-motion: reduce) { .wallet-modal__panel { animation-name: wm-fade; } }
+@media (max-width: 639px) {
+  .wallet-modal { padding: var(--s-3); }
+  .wallet-modal__panel { padding: var(--s-4); max-height: calc(100svh - 2 * var(--s-3)); }
+}
+
+/* the nav's account control: the short address and the balance, a two-item menu under it */
+.account { position: relative; display: flex; }
+.account__toggle { display: inline-flex; align-items: center; gap: var(--s-3); }
+.account__addr, .account__bal { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.account__bal { color: var(--muted); }
+.account__menu {
+  position: absolute; top: calc(100% + var(--s-2)); right: 0; z-index: 20; min-width: 200px;
+  display: grid; padding: var(--s-1); background: var(--p-bg); border: 1px solid var(--line); border-radius: var(--r-md);
+  animation: wm-drop var(--m-panel, 200ms) var(--ease, ease) both;
+}
+.account__item {
+  min-height: 44px; padding: 0 var(--s-3); border: 0; border-radius: var(--r-sm); background: transparent; color: var(--ink);
+  font: 500 var(--t-small)/1 var(--font-text); text-align: left; white-space: nowrap; cursor: pointer;
+  transition: background-color var(--m-in, 150ms) var(--ease, ease);
+}
+.account__item:hover, .account__item:focus-visible { background: color-mix(in oklab, var(--ink) 9%, var(--bg)); }
+@media (prefers-reduced-motion: reduce) { .account__menu { animation-name: wm-fade; } }
+/* a tablet's bar keeps the account control beside the menu button (the kit keeps only the primary there) */
+@media (min-width: 640px) and (max-width: 1023px) { .nav:not(.is-open) .nav__actions > .account { display: flex; } }
+/* the open phone and tablet sheet: the control spans the bar at its foot and the menu opens in place above the fold */
+@media (max-width: 1023px) {
+  .nav.is-open .account { display: grid; gap: var(--s-2); }
+  .nav.is-open .account__toggle { justify-content: space-between; }
+  .nav.is-open .account__menu { position: static; order: -1; min-width: 0; }
 }
 
 /* a card: a face and a back that swap by squeezing, never by turning */

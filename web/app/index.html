@@ -76,6 +76,7 @@
     </nav>
     <div class="nav__actions">
       <button class="btn btn--primary copy" type="button" data-copy="pnpm --filter @hidden-hand/bots demo-round -- --demo" data-copied-label="Copied">Copy the demo command</button>
+      <script data-hh-mode>(function(){var p=new URLSearchParams(location.search);if(p.get('round')!==null||p.get('mode')==='express')return;function w(b){b.textContent='Connect wallet';b.removeAttribute('data-copy');b.removeAttribute('data-copied-label');b.classList.remove('copy');b.setAttribute('data-wallet-connect','')}var b=document.querySelector('.nav__actions .btn');if(b)w(b)})()</script>
     </div>
     <button class="nav__toggle" type="button" aria-expanded="false" aria-label="Menu">
       <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 5h14M2 13h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
@@ -91,7 +92,7 @@
           <h1 id="hero-h">Live trading pit</h1>
           <p class="hero__lead" id="lead-wallet">Your wallet, one seat, three bots. One popup per trade.</p>
           <p class="hero__lead" id="lead-express" hidden>Express mode: the autoplay demo with no wallet popup. Take the free seat, or a script plays seat 4.</p>
-          <script>(function(){var p=new URLSearchParams(location.search);if(p.get('round')!==null||p.get('mode')==='express'){document.getElementById('lead-wallet').hidden=true;document.getElementById('lead-express').hidden=false}})()</script>
+          <script data-hh-mode>(function(){var p=new URLSearchParams(location.search);if(p.get('round')!==null||p.get('mode')==='express'){document.getElementById('lead-wallet').hidden=true;document.getElementById('lead-express').hidden=false}})()</script>
         </div>
       </div>
       <div class="hero__stage">
@@ -173,6 +174,7 @@
       <div class="section-head--split">
         <div><h2 id="close-h">Start a round of your own</h2><p class="t-lead">One command opens a devnet round and seats the bots.</p></div>
         <button class="btn btn--primary copy" type="button" data-copy="pnpm --filter @hidden-hand/bots demo-round -- --demo" data-copied-label="Copied">Copy the demo command</button>
+        <script data-hh-mode>(function(){var p=new URLSearchParams(location.search);if(p.get('round')!==null||p.get('mode')==='express')return;function w(b){b.textContent='Connect wallet';b.removeAttribute('data-copy');b.removeAttribute('data-copied-label');b.classList.remove('copy');b.setAttribute('data-wallet-connect','')}var h=document.getElementById('close-h'),b=document.querySelector('#contact .closing__cta .btn');if(h){h.textContent='Play a round with your wallet';var l=h.nextElementSibling;if(l)l.textContent='Connect a devnet wallet and take a seat; three bots take the rest.'}if(b)w(b)})()</script>
       </div>
       <p class="close__word" aria-hidden="true">Hidden Hand</p>
     </div>

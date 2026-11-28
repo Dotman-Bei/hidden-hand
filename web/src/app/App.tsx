@@ -2,30 +2,9 @@ import { Suspense, lazy, useEffect } from "react";
 import { Desk } from "./Desk";
 import { Tape } from "./Tape";
 import type { RoundApi } from "./useRound";
+import { CONNECT_LABEL } from "./wallet/AccountControl";
+import { copyText } from "./wallet/clipboard";
 import { playMode } from "./wallet/route";
-
-async function copyText(text: string): Promise<boolean> {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch {
-    const area = document.createElement("textarea");
-    area.value = text;
-    area.setAttribute("readonly", "");
-    area.style.position = "fixed";
-    area.style.opacity = "0";
-    document.body.append(area);
-    area.select();
-    let ok = false;
-    try {
-      ok = document.execCommand("copy");
-    } catch {
-      ok = false;
-    }
-    area.remove();
-    return ok;
-  }
-}
 
 /** One delegated handler for every [data-copy] button on the page: the desk's, the nav's and the footer's. */
 function useCopyButtons(): void {
@@ -63,7 +42,7 @@ const walletIdle = (
       <>
         <p className="desk-panel__title">Play with your wallet</p>
         <p className="desk-panel__text">Loading the wallet desk…</p>
-        <button type="button" className="btn btn--primary" disabled>Connect a wallet</button>
+        <button type="button" className="btn btn--primary" disabled>{CONNECT_LABEL}</button>
       </>
     }
   />

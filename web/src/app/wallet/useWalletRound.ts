@@ -28,26 +28,11 @@ import {
 } from "@hidden-hand/bots/house";
 import { deriveUiState, type UiState } from "../states";
 import { further, type RoundApi, type SentTrade } from "../useRound";
-import { onWalletsChanged, solanaWallets } from "./discover";
+import { connectErrorText } from "./connectError";
 import { sessionVault } from "./sessionVault";
+import { signedCounter } from "./signedCounter";
+import { useDetectedWallets } from "./useDetectedWallets";
 import { WALLET_CLOSED, deriveWalletUi, walletErrorText, type WalletUi } from "./walletStates";
-
-/** Counts a popup only when the wallet hands back a signature (a refused or closed popup is not counted). */
-function signedCounter(s: WalletSigner, onSigned: () => void): WalletSigner {
-  return {
-    publicKey: s.publicKey,
-    signTransaction: async (tx) => {
-      const out = await s.signTransaction(tx);
-      onSigned();
-      return out;
-    },
-    signMessage: async (m) => {
-      const out = await s.signMessage(m);
-      onSigned();
-      return out;
-    },
-  };
-}
 
 /** A wallet that blocks a popup without answering must not hang the trade buttons. */
 function answerWithin(s: WalletSigner, ms: number): WalletSigner {
@@ -66,7 +51,8 @@ export interface WalletApi {
   popups: number; // signatures the wallet returned, for this wallet and this round
   swept: number | null; // lamports swept back at the end
   leftover: boolean; // sessionVault() holds keys from an unfinished round
-  connect(name: string): Promise<void>;
+  /** The wallet's connect popup; null once it connected, else the words the connect modal shows. */
+  connect(name: string): Promise<string | null>;
   disconnect(): void;
   start(): Promise<void>;
   retry(): void; // error -> back to ready (re-reads balance); never re-runs a half round
@@ -83,7 +69,7 @@ const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 export function useWalletRound(): { round: RoundApi; wallet: WalletApi } {
   const base = useMemo(() => baseConnection(), []);
-  const [found, setFound] = useState<Wallet[]>([]);
+  const found: Wallet[] = useDetectedWallets();
   const [walletName, setWalletName] = useState<string | null>(null);
   const [address, setAddress] = useState<string | null>(null);
   const [balance, setBalance] = useState<number | null>(null);
@@ -107,13 +93,6 @@ export function useWalletRound(): { round: RoundApi; wallet: WalletApi } {
   const viewRef = useRef<TableView | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const runRef = useRef(0);
-
-  // 1. discovery: the wallets that registered with the Wallet Standard, now and later
-  useEffect(() => {
-    const refresh = () => setFound(solanaWallets());
-    refresh();
-    return onWalletsChanged(refresh);
-  }, []);
 
   // the clock the countdown reads
   useEffect(() => {
@@ -159,22 +138,23 @@ export function useWalletRound(): { round: RoundApi; wallet: WalletApi } {
   }, []);
 
   const connect = useCallback(
-    async (name: string) => {
+    async (name: string): Promise<string | null> => {
       const w = found.find((x) => x.name === name);
-      if (!w) return;
-      setError(null);
+      if (!w) return `${name} is no longer in this browser. Reload the page and try again.`;
       try {
         const account = await connectStandard(w);
         const signer = signedCounter(standardSigner(w, account), () => setPopups((n) => n + 1));
+        setError(null);
         setPopups(0); // a new wallet starts its own count
         signerRef.current = signer;
         setWalletName(w.name);
         setAddress(signer.publicKey.toBase58());
         setLeftover(sessionVault().load() !== null);
         setBalance(null);
-        await Promise.all([readBalance(), readNeed()]);
+        void Promise.all([readBalance(), readNeed()]); // the desk shows "Reading your devnet balance" meanwhile
+        return null;
       } catch (e) {
-        setError(walletErrorText(message(e), isUserRejection(e), "You closed the wallet popup, so no wallet was connected."));
+        return connectErrorText(e); // shown in the connect modal; the desk stays on its connect panel
       }
     },
     [found, readBalance, readNeed],
