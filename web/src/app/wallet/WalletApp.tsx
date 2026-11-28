@@ -4,6 +4,7 @@ import { Desk } from "../Desk";
 import { Record } from "../Record";
 import { Tape } from "../Tape";
 import { AccountControl } from "./AccountControl";
+import { footerAction, useFooterAction } from "./useFooterAction";
 import { useWalletRound, type WalletApi } from "./useWalletRound";
 import { WalletModal } from "./WalletModal";
 import { WalletPanel, hasWalletPanel } from "./WalletPanel";
@@ -78,7 +79,9 @@ export function WalletApp() {
     opener.current = el;
     setPicking(true);
   }, []);
-  // the footer's static button (the inline script marks it data-wallet-connect in wallet mode)
+  // the footer's static button (the inline script marks it data-wallet-connect in wallet mode); once a wallet
+  // is connected a link to the pit stands there instead
+  useFooterAction(wallet.address !== null);
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
       const el = e.target instanceof Element ? e.target.closest<HTMLElement>("[data-wallet-connect]") : null;
@@ -87,11 +90,12 @@ export function WalletApp() {
     document.addEventListener("click", onClick);
     return () => document.removeEventListener("click", onClick);
   }, [openPicker]);
-  const afterConnect = useCallback(
-    (): HTMLElement | null =>
-      shown(document.querySelector<HTMLElement>(".nav__actions .account__toggle")) ?? document.querySelector<HTMLElement>(".wallet-strip"),
-    [],
-  );
+  const afterConnect = useCallback((): HTMLElement | null => {
+    // the footer's button gave way to its link before the modal closed: the focus stays in the closing section.
+    // (When the modal closes first, it focuses the button and the swap carries the focus to the link.)
+    const link = opener.current?.hasAttribute("data-wallet-connect") ? footerAction() : null;
+    return link ?? shown(document.querySelector<HTMLElement>(".nav__actions .account__toggle")) ?? document.querySelector<HTMLElement>(".wallet-strip");
+  }, []);
 
   const chip = `Wallet · ${round.roundParam ? `Round ${round.roundParam} · Private ER` : "devnet"}`;
   const panel = hasWalletPanel(wallet) ? <WalletPanel w={wallet} onConnect={openPicker} /> : undefined;
