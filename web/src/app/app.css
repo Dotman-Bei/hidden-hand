@@ -299,8 +299,25 @@ ol.record__list { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 
 
 /* ------------------------------------------------------------------ close, footer and the phone nav */
 .footer--statement { --action: var(--p-action); --action-ink: var(--p-action-ink); }
+/* the dealt line-carries-colour moment: its stage keeps a gutter of 20 to 32px off the section's edges (the kit's 8 to
+   18px put the cover's top 9px under the change of ground at 768 and 820, read as flush there) */
+#record.mo-lc { --mo-gap: clamp(20px, 2.4vw, 32px); }
+/* the close in four rows in normal flow: the head (h2, lead, button), the word, the links, the legal lines. The word's
+   row takes what the screen leaves under the head and the word is sized to fit that row, by the .wrap's width and the
+   row's height, so it never runs into the head or the links (a fixed 216px word spilled out of a short row over the
+   links). The footer stays one screen and grows past it rather than lay one row over another. */
+.close__word > span { line-height: 1; letter-spacing: -0.045em; white-space: nowrap; }
+@media (min-width: 640px) {
+  footer.closing { height: auto; min-height: 100vh; min-height: 100svh; display: flex; flex-direction: column; }
+  footer.closing > .wrap { flex: 1 0 auto; height: auto; grid-template-rows: minmax(max-content, 1fr) auto; }
+  .closing__cta.close--word { min-height: auto; }
+  .close--word > .close__word { flex: 1 1 0; min-height: 96px; margin: 0; container-type: size; display: flex; align-items: flex-end; overflow: visible; }
+  .close__word > span { font-size: min(17.6cqi, 100cqh); }
+  .close--word h2 { max-width: none; }
+}
 @media (max-width: 639px) {
-  .close__word { font-size: clamp(36px, 11vw, 96px); line-height: 1; overflow: visible; }
+  .close__word { display: flex; overflow: visible; container-type: inline-size; }
+  .close__word > span { font-size: min(96px, 17.6cqi); }
   .footer .footer__col h3 { margin-bottom: 0; }
   .footer .footer__col { grid-column: 1 / -1; }
   .closing__cta .section-head--split { gap: var(--s-4); }

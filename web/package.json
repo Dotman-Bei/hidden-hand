@@ -8,7 +8,8 @@
     "dev": "node scripts/sync-kit.mjs && vite",
     "build": "node scripts/sync-kit.mjs && tsc --noEmit -p tsconfig.json && vite build",
     "test": "vitest run --dir test",
-    "verify": "tsc --noEmit -p tsconfig.json && vitest run --dir test"
+    "verify": "tsc --noEmit -p tsconfig.json && vitest run --dir test && node scripts/footer-overlap.mjs",
+    "footer-overlap": "node scripts/footer-overlap.mjs"
   },
   "dependencies": {
     "@coral-xyz/anchor": "0.32.1",
