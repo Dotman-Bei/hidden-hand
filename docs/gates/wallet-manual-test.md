@@ -44,3 +44,36 @@ notes: OKX Wallet blocked at popup 1 (funding transfer): its popup showed Networ
 ```
 
 MANUAL-TEST: FAIL (steps 1-7, 12, 13 passed with Solflare; steps 8-9 failed: Solflare hard-blocks the Rollup trade popup as "for mainnet"; OKX is blocked at popup 1 on mainnet; Phantom untested)
+
+## Phantom test (wallet-modal preview, 2026-11-28)
+
+Preview `https://hidden-hand-eehw044ho-heisbei-s-projects.vercel.app/app/` (built from `39eb486`), wallet mode (no `?mode=`). The concierge drove only the web page in a new Chrome tab; the user approved every Phantom popup (the concierge never touched the wallet window; no key, seed or token was read or recorded). Production untouched.
+
+```
+tested: 2026-11-28T10:56–11:02Z  wallet: Phantom (version not reported), Testnet Mode, Solana Devnet  account: 2HS5…Hqbi
+modal: Phantom listed with "Detected" (also MetaMask, OKX Wallet); compatibility line still reads "Phantom: not tested yet"
+table: 6YjX8M…jjbE3K (round 1795863460043, Private ER)
+popups (7 in Phantom, all approved, none rejected, no retries):
+  1 connect                           10:56Z   approved  -> nav "2HS5…Hqbi 5.44 SOL", strip "Popups signed: 0"
+  2 tx: fund house + 3 bots (54VtCL…)  10:57:40Z approved  -> counter 1
+  3 tx: join_table, base devnet (5im33e…) 10:57:46Z approved -> counter 2
+  4 sign message (Private ER sign-in) ~10:57:50Z approved -> counter 3, "Seating the bots… dealing"
+  5 tx: trade Buy 2 (Private ER)      ~10:58:50Z approved -> landed "Seat 1 bought 2 at 78.00", counter 4
+  6 tx: trade Buy 2 (Private ER)      ~10:59:10Z approved -> landed "Seat 1 bought 2 at 82.00", counter 5
+  7 tx: trade Buy 1 (Private ER)      ~10:59:30Z approved -> landed "Seat 1 bought 1 at 83.00", counter 6
+app counter: 6 = popups 2-7 (the connect popup is not counted, by design). While trade popup 5 was open the counter stayed at 3, so it now counts signatures, not requests (the gates:29 label issue is gone).
+trades landed: 3/3 on the Private ER (TEE); hint +5, final position long 5. No "Network mismatch" block, no error text on the page.
+Phantom's own popup text / warnings: not visible to the concierge; to be reported by the user.
+reveal: bell, hands face up, settled: hidden sum 83, close 84.00, gap 1.00, Seat 2 wins 0.04 SOL; your seat long 5, +16.50
+claim 5KMfs4… 10:59:53Z; sweep 4 txs 10:59:55–59Z (3jbEEe…, 5xv6Wy…, 2v8kVo…, 4JYco5…) = 0.055930488 SOL; page "Swept 0.056 SOL back to your wallet."
+in-tab keys after the sweep (devnet RPC, confirmed): house 8cJd…C5UT 0, bots BVmy…a5Ux 0, B5Lh…pnFv 0, N5bv…Smgc 0
+balance: 5.441681534 -> 5.408864990 SOL (net -0.032816544: fund -0.07762556, join -0.011121472, sweep +0.055930488; reconciles to the lamport)
+left on chain: seat account 2Vug…GD8a 0.001037376 SOL (rent paid in the join tx), table 6YjX…bE3K 0.0134366 SOL (rent, house-paid)
+console: no app errors; one exception from Vercel's preview feedback toolbar (vercel.live feedback.js "d.closest is not a function"), not the app
+network: api.devnet.solana.com and devnet-tee.magicblock.app (token redacted) all 200 for the app; one 429 came from the concierge's own burst of verification reads
+nav: short address + devnet SOL shown; Copy address -> "Address copied", clipboard holds the 44-char address; Disconnect -> nav "Connect wallet", panel back to Idle
+footer button after connecting: still "Connect wallet" (known)
+other: own trades on the tape have no "#N" number (bots: "#11 · 0:36", you: "0:36"); Disconnect after a round also clears the settled result, the "Swept" line and the on-chain record
+```
+
+PHANTOM-OK (full round on the Private ER: connect, fund, join, sign-in, 3 trades each signed in its own Phantom popup, reveal, sweep; no retries)
